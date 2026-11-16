@@ -196,10 +196,11 @@ st.markdown("---")
 # ── Analisis Residual Data (Rubrik 5) ─────────────────────────────────────────
 st.markdown("## 5. Analisis Residual dan Uji Normalitas Galat")
 residuals = metrics["Residuals"]
-st.markdown(f"""
-Residual dihitung dari selisih nilai aktual terhadap model fitted ($e_i = y_i - \\hat{y}_i$).
+st.markdown(r"""
+Residual dihitung dari selisih nilai aktual terhadap model fitted ($e_i = y_i - \hat{y}_i$).
 Distribusi residual yang simetris di sekitar nol menandakan model bebas dari bias sistematis.
-
+""")
+st.markdown(f"""
 | Statistik Residual | Nilai Numerik | Keterangan Evaluasi |
 |---|---|---|
 | Rata-rata Residual (Mean) | `{np.mean(residuals):.4e}` | Mendekati 0 (Bebas bias sistematis) |
