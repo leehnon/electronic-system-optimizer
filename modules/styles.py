@@ -1,80 +1,105 @@
 """
 modules/styles.py — Design system ElectronicSystem Optimizer
+Clean, modern, high-contrast UI for Streamlit
 """
 import streamlit as st
 
-# CSS murni — pakai @import di dalam style tag, bukan <link> terpisah
-# Gunakan string biasa (bukan f-string) agar {} CSS tidak bentrok
 _CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* APP SHELL */
+/* ══════════════════════════════════════════════════════
+   GLOBAL APP SHELL
+══════════════════════════════════════════════════════ */
 html, body, [data-testid="stApp"] {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-    background-color: #f6f8fa !important;
-    color: #1c2128 !important;
-}
-.block-container {
-    padding: 2.25rem 3rem 5rem !important;
-    max-width: 1140px !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    background-color: #f8fafc !important;
+    color: #0f172a !important;
 }
 
-/* SIDEBAR — Dark */
-[data-testid="stSidebar"] {
-    background: #0d1117 !important;
-    border-right: 1px solid #21262d !important;
+.block-container {
+    padding: 2rem 3rem 4rem !important;
+    max-width: 1160px !important;
 }
+
+/* ══════════════════════════════════════════════════════
+   SIDEBAR — Clean, Light & High Contrast
+══════════════════════════════════════════════════════ */
+[data-testid="stSidebar"] {
+    background-color: #ffffff !important;
+    border-right: 1px solid #e2e8f0 !important;
+    box-shadow: 1px 0 3px rgba(0, 0, 0, 0.02) !important;
+}
+
+/* Brand header at top of sidebar */
 [data-testid="stSidebar"] > div:first-child::before {
-    content: "\\26A1  ESPOptimizer";
+    content: "⚡ Electronic Optimizer";
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #e6edf3;
-    padding: 22px 20px 14px;
-    letter-spacing: -0.01em;
-    border-bottom: 1px solid #21262d;
-    margin-bottom: 10px;
+    color: #0f172a;
+    padding: 20px 20px 14px;
+    letter-spacing: -0.02em;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 12px;
     font-family: 'Inter', sans-serif;
 }
+
+/* Sidebar Nav */
 [data-testid="stSidebarNav"] {
-    padding: 2px 0 !important;
+    padding: 0 !important;
 }
+
 [data-testid="stSidebarNav"]::before {
-    content: "MENU";
+    content: "NAVIGASI UTAMA";
     display: block;
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    color: #484f58;
-    letter-spacing: 0.1em;
-    padding: 0 20px 6px;
+    color: #64748b;
+    letter-spacing: 0.08em;
+    padding: 0 20px 8px;
     text-transform: uppercase;
 }
+
 [data-testid="stSidebarNav"] a {
     display: flex !important;
     align-items: center !important;
-    padding: 7px 16px !important;
-    margin: 2px 8px !important;
-    border-radius: 6px !important;
-    color: #8b949e !important;
-    font-size: 0.84rem !important;
+    padding: 8px 14px !important;
+    margin: 3px 10px !important;
+    border-radius: 8px !important;
+    color: #334155 !important;
+    font-size: 0.88rem !important;
     font-weight: 500 !important;
     text-decoration: none !important;
-    transition: background 0.1s ease, color 0.1s ease !important;
+    transition: all 0.15s ease !important;
     background: transparent !important;
-    border-left: 2px solid transparent !important;
-}
-[data-testid="stSidebarNav"] a:hover {
-    background: #161b22 !important;
-    color: #cdd9e5 !important;
-}
-[data-testid="stSidebarNav"] a[aria-current="page"] {
-    background: rgba(31, 111, 235, 0.12) !important;
-    color: #58a6ff !important;
-    border-left: 2px solid #1f6feb !important;
-    padding-left: 14px !important;
+    border-left: 3px solid transparent !important;
 }
 
-/* Rename "app" → "Beranda" */
+[data-testid="stSidebarNav"] a span,
+[data-testid="stSidebarNav"] a p {
+    color: inherit !important;
+    font-weight: inherit !important;
+}
+
+[data-testid="stSidebarNav"] a:hover {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+}
+
+[data-testid="stSidebarNav"] a[aria-current="page"] {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border-left: 3px solid #2563eb !important;
+    font-weight: 600 !important;
+}
+
+[data-testid="stSidebarNav"] a[aria-current="page"] span,
+[data-testid="stSidebarNav"] a[aria-current="page"] p {
+    color: #1d4ed8 !important;
+    font-weight: 600 !important;
+}
+
+/* Replace "app" label with "🏠 Beranda" */
 [data-testid="stSidebarNav"] ul > li:first-child a p {
     font-size: 0 !important;
     color: transparent !important;
@@ -82,237 +107,241 @@ html, body, [data-testid="stApp"] {
     line-height: 1.4 !important;
 }
 [data-testid="stSidebarNav"] ul > li:first-child a p::before {
-    content: "Beranda";
-    font-size: 0.84rem !important;
+    content: "🏠 Beranda";
+    font-size: 0.88rem !important;
     color: inherit;
     position: absolute;
-    left: 0; top: 0;
+    left: 0;
+    top: 0;
     white-space: nowrap;
 }
 
-/* TYPOGRAPHY */
+/* Sidebar collapse button color */
+[data-testid="stSidebarCollapseButton"] button {
+    color: #475569 !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   TYPOGRAPHY
+══════════════════════════════════════════════════════ */
 h1 {
-    font-size: 1.7rem !important;
+    font-size: 1.75rem !important;
     font-weight: 700 !important;
     letter-spacing: -0.03em !important;
-    color: #1c2128 !important;
-    margin-bottom: 0.25rem !important;
+    color: #0f172a !important;
+    margin-bottom: 0.35rem !important;
 }
 h2 {
-    font-size: 1.15rem !important;
+    font-size: 1.18rem !important;
     font-weight: 700 !important;
-    color: #1c2128 !important;
-    border-bottom: 1px solid #d0d7de;
+    color: #0f172a !important;
+    border-bottom: 1px solid #e2e8f0;
     padding-bottom: 0.5rem;
     margin-top: 2rem !important;
 }
 h3 {
-    font-size: 0.95rem !important;
+    font-size: 0.98rem !important;
     font-weight: 600 !important;
-    color: #1c2128 !important;
+    color: #0f172a !important;
 }
-p { color: #57606a !important; font-size: 0.875rem !important; line-height: 1.6 !important; }
+p {
+    color: #475569 !important;
+    font-size: 0.88rem !important;
+    line-height: 1.6 !important;
+}
 
-/* METRIC CARDS */
+/* ══════════════════════════════════════════════════════
+   METRIC CARDS
+══════════════════════════════════════════════════════ */
 [data-testid="metric-container"] {
-    background: white !important;
-    border: 1px solid #d0d7de !important;
-    border-radius: 8px !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
     padding: 1.1rem 1.25rem !important;
-    transition: border-color 0.15s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.15s ease;
 }
-[data-testid="metric-container"]:hover { border-color: #1f6feb !important; }
+[data-testid="metric-container"]:hover {
+    border-color: #93c5fd !important;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.08) !important;
+}
 [data-testid="stMetricLabel"] {
     font-size: 0.72rem !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: 0.06em !important;
-    color: #57606a !important;
+    color: #64748b !important;
 }
 [data-testid="stMetricValue"] {
-    font-size: 1.45rem !important;
+    font-size: 1.5rem !important;
     font-weight: 700 !important;
-    color: #1c2128 !important;
+    color: #0f172a !important;
     font-family: 'JetBrains Mono', monospace !important;
     letter-spacing: -0.02em !important;
 }
 
-/* BUTTONS */
+/* ══════════════════════════════════════════════════════
+   BUTTONS
+══════════════════════════════════════════════════════ */
 .stButton > button {
-    border-radius: 6px !important;
-    font-size: 0.875rem !important;
+    border-radius: 8px !important;
+    font-size: 0.88rem !important;
     font-weight: 600 !important;
-    padding: 0.45rem 1.1rem !important;
-    transition: all 0.12s ease !important;
+    padding: 0.5rem 1.25rem !important;
+    transition: all 0.15s ease !important;
 }
 .stButton > button[kind="primary"],
 .stButton > button:not([kind]) {
-    background: #1f6feb !important;
-    color: white !important;
-    border: 1px solid #1f6feb !important;
+    background: #2563eb !important;
+    color: #ffffff !important;
+    border: 1px solid #2563eb !important;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2) !important;
 }
 .stButton > button[kind="primary"]:hover,
 .stButton > button:not([kind]):hover {
-    background: #1a5fc8 !important;
+    background: #1d4ed8 !important;
+    border-color: #1d4ed8 !important;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3) !important;
 }
 .stButton > button[kind="secondary"] {
-    background: white !important;
-    color: #1c2128 !important;
-    border: 1px solid #d0d7de !important;
+    background: #ffffff !important;
+    color: #1e293b !important;
+    border: 1px solid #cbd5e1 !important;
+}
+.stButton > button[kind="secondary"]:hover {
+    background: #f8fafc !important;
+    border-color: #94a3b8 !important;
 }
 
-/* TABS */
+/* ══════════════════════════════════════════════════════
+   TABS
+══════════════════════════════════════════════════════ */
 [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid #d0d7de !important;
+    border-bottom: 1px solid #e2e8f0 !important;
     gap: 0 !important;
     padding: 0 !important;
 }
 [data-baseweb="tab"] {
-    padding: 9px 18px !important;
-    font-size: 0.84rem !important;
+    padding: 10px 20px !important;
+    font-size: 0.88rem !important;
     font-weight: 500 !important;
-    color: #57606a !important;
+    color: #64748b !important;
     background: transparent !important;
     border-radius: 0 !important;
     border-bottom: 2px solid transparent !important;
     margin-bottom: -1px !important;
+    transition: color 0.15s ease !important;
 }
 [aria-selected="true"][data-baseweb="tab"] {
-    color: #1c2128 !important;
+    color: #2563eb !important;
     font-weight: 600 !important;
-    border-bottom-color: #1f6feb !important;
+    border-bottom-color: #2563eb !important;
 }
 [data-baseweb="tab-highlight"],
 [data-baseweb="tab-border"] { display: none !important; }
 
-/* ALERTS */
-[data-testid="stInfo"] {
-    background: #ddf4ff !important;
-    border: 1px solid rgba(84, 174, 255, 0.4) !important;
-    border-radius: 6px !important;
-    color: #0550ae !important;
-    font-size: 0.875rem !important;
-}
-[data-testid="stSuccess"] {
-    background: #dafbe1 !important;
-    border: 1px solid rgba(74, 194, 107, 0.4) !important;
-    border-radius: 6px !important;
-    color: #1a7f37 !important;
-    font-size: 0.875rem !important;
-}
-[data-testid="stWarning"] {
-    background: #fff8c5 !important;
-    border: 1px solid rgba(212, 167, 44, 0.4) !important;
-    border-radius: 6px !important;
-    color: #7d4e00 !important;
-    font-size: 0.875rem !important;
-}
-[data-testid="stError"] {
-    background: #ffebe9 !important;
-    border: 1px solid rgba(255, 129, 130, 0.4) !important;
-    border-radius: 6px !important;
-    color: #82071e !important;
-    font-size: 0.875rem !important;
+/* ══════════════════════════════════════════════════════
+   INPUTS & SELECTBOXES
+══════════════════════════════════════════════════════ */
+[data-testid="stSelectbox"] [data-baseweb="select"] > div,
+[data-testid="stNumberInput"] input,
+[data-testid="stTextInput"] input {
+    border-radius: 8px !important;
+    border-color: #cbd5e1 !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 0.88rem !important;
 }
 
-/* DATAFRAME */
+/* ══════════════════════════════════════════════════════
+   ALERTS / CALLOUTS
+══════════════════════════════════════════════════════ */
+[data-testid="stInfo"] {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    border-radius: 8px !important;
+    color: #1e40af !important;
+}
+[data-testid="stSuccess"] {
+    background: #f0fdf4 !important;
+    border: 1px solid #bbf7d0 !important;
+    border-radius: 8px !important;
+    color: #166534 !important;
+}
+[data-testid="stWarning"] {
+    background: #fffbeb !important;
+    border: 1px solid #fde68a !important;
+    border-radius: 8px !important;
+    color: #92400e !important;
+}
+[data-testid="stError"] {
+    background: #fef2f2 !important;
+    border: 1px solid #fecaca !important;
+    border-radius: 8px !important;
+    color: #991b1b !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   CONTAINERS & TABLES
+══════════════════════════════════════════════════════ */
 [data-testid="stDataFrame"] {
-    border: 1px solid #d0d7de !important;
+    border: 1px solid #e2e8f0 !important;
     border-radius: 8px !important;
     overflow: hidden !important;
 }
-
-/* EXPANDER */
 [data-testid="stExpander"] {
-    border: 1px solid #d0d7de !important;
+    border: 1px solid #e2e8f0 !important;
     border-radius: 8px !important;
-    background: white !important;
+    background: #ffffff !important;
 }
 [data-testid="stExpander"] summary {
     font-weight: 600 !important;
-    font-size: 0.875rem !important;
-    color: #1c2128 !important;
+    color: #0f172a !important;
 }
 
-/* DIVIDER */
 hr {
     border: none !important;
-    border-top: 1px solid #d0d7de !important;
+    border-top: 1px solid #e2e8f0 !important;
     margin: 1.5rem 0 !important;
 }
 
-/* CODE */
-code {
-    font-family: 'JetBrains Mono', 'Consolas', monospace !important;
-    font-size: 0.78rem !important;
-    background: #f6f8fa !important;
-    border: 1px solid #d0d7de !important;
-    border-radius: 4px !important;
-    padding: 2px 6px !important;
-    color: #0550ae !important;
-}
-pre {
-    background: #f6f8fa !important;
-    border: 1px solid #d0d7de !important;
-    border-radius: 8px !important;
-    padding: 1rem 1.25rem !important;
-}
-pre code {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    color: #1c2128 !important;
-    font-size: 0.82rem !important;
-}
-
-/* CAPTION */
-[data-testid="stCaptionContainer"] {
-    color: #8c959f !important;
-    font-size: 0.75rem !important;
-}
-
-/* STEP CARD */
+/* Step cards on homepage */
 .step-card {
-    background: white;
-    border: 1px solid #d0d7de;
-    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
     padding: 16px 20px;
-    margin-bottom: 10px;
-    transition: border-color 0.15s, box-shadow 0.15s;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    transition: all 0.15s ease;
 }
 .step-card:hover {
-    border-color: #1f6feb;
-    box-shadow: 0 1px 8px rgba(31, 111, 235, 0.1);
+    border-color: #93c5fd;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.08);
 }
 .step-num {
-    font-size: 0.65rem;
+    font-size: 0.68rem;
     font-weight: 700;
-    color: #8c959f;
+    color: #2563eb;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
 }
 .step-title {
     font-weight: 700;
-    color: #1c2128;
+    color: #0f172a;
     margin: 4px 0 2px;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
 }
 .step-desc {
-    color: #57606a;
-    font-size: 0.8rem;
+    color: #64748b;
+    font-size: 0.82rem;
     line-height: 1.5;
     margin: 0;
 }
-
-/* SCROLLBAR */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #d0d7de; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #8c959f; }
 """
 
-
 def inject_css():
-    """Inject design system CSS. Panggil tepat setelah st.set_page_config()."""
+    """Inject clean & high-contrast design system."""
     st.markdown(f"<style>{_CSS}</style>", unsafe_allow_html=True)
