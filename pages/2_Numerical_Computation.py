@@ -11,9 +11,12 @@ from modules.newton_raphson import (newton_raphson_scalar,
     find_diode_operating_point, find_rlc_resonance, find_rc_time_constant)
 from modules.visualization import (plot_convergence, plot_newton_raphson_convergence,
                                     plot_rc_charging, plot_rlc_impedance, plot_amplifier_gain)
+from modules.data_generator import ensure_default_data
 
 st.set_page_config(page_title="Numerical Computation", page_icon="🔢", layout="wide")
 inject_css()
+ensure_default_data()
+
 st.title("Numerical Computation")
 
 if "data" not in st.session_state:

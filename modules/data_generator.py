@@ -62,7 +62,6 @@ def generate_diode_data(V_s_range=(0.1, 1.5), R=1000, n_points=50,
     V_sources = np.linspace(V_s_range[0], V_s_range[1], n_points)
     V_D_list, I_D_list = [], []
     for V_s in V_sources:
-        # Aproksimasi sederhana
         V_D = V_T * np.log(V_s / (R * I_s) + 1) if V_s > 0 else 0
         V_D = min(V_D, V_s)
         I_D = I_s * (np.exp(V_D / V_T) - 1)
@@ -77,3 +76,34 @@ def generate_diode_data(V_s_range=(0.1, 1.5), R=1000, n_points=50,
     df.attrs["I_s"] = I_s
     df.attrs["V_T"] = V_T
     return df
+
+
+def ensure_default_data():
+    """
+    Inisialisasi data default agar halaman tidak pernah kosong
+    saat user membuka atau me-refresh menu.
+    """
+    import streamlit as st
+    if "data" not in st.session_state:
+        R_val = 1000.0
+        C_val = 1e-6
+        V_in_val = 5.0
+        df = generate_rc_data(R=R_val, C=C_val, V_in=V_in_val, t_max=5*R_val*C_val,
+                              n_points=100, noise_std=0.05)
+        st.session_state["data"] = df
+        st.session_state["circuit"] = "RC Charging"
+        st.session_state["true_params"] = {
+            "R": R_val, "C": C_val, "tau": R_val*C_val, "V_in": V_in_val
+        }
+
+        # Jalankan optimasi default agar grafik dan evaluasi langsung terisi
+        from modules.gradient_descent import (gradient_descent,
+                                              rc_voltage_error, rc_voltage_grad)
+        t = df["time_s"].values
+        V = df["voltage_V"].values
+        cost_f = lambda p: rc_voltage_error(p, t, V, V_in_val)
+        grad_f = lambda p: rc_voltage_grad(p, t, V, V_in_val)
+        res = gradient_descent(cost_f, grad_f, params_init=[1150.0, 0.85e-6],
+                               learning_rate=1e-6, max_iter=300)
+        st.session_state["gd_result"] = res
+        st.session_state["gd_circuit"] = "RC Charging"

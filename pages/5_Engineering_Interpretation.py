@@ -3,9 +3,12 @@ import numpy as np
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from modules.styles import inject_css
+from modules.data_generator import ensure_default_data
 
 st.set_page_config(page_title="Engineering Interpretation", page_icon="💡", layout="wide")
 inject_css()
+ensure_default_data()
+
 st.title("Engineering Interpretation")
 st.markdown("Interpretasi teknik hasil optimasi parameter elektronika.")
 
