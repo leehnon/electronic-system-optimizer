@@ -43,12 +43,12 @@ if circuit == "RC Charging":
     st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
     **Konstanta Waktu Pengisian (τ = RC)**
-    - Pada waktu **t = τ = {tau*1000:.4f} ms**, tegangan kapasitor mencapai **63.2%** dari tegangan sumber $V_{{in}}$.
+    - Pada waktu **t = τ = {tau*1000:.4f} ms**, tegangan kapasitor mencapai **63.2%** dari tegangan sumber V_in.
     - Pada **t = 5τ = {5*tau*1000:.4f} ms**, kapasitor berada dalam kondisi *steady-state* penuh (**99.3%**).
 
     **Frekuensi Cutoff & Respon Sinyal**
-    - $f_c = \\frac{{1}}{{2\\pi RC}} =$ **{f_c:.2f} Hz**.
-    - Rangkaian berfungsi sebagai **Low-Pass Filter (LPF)** pasif orde 1 dengan pelemahan $-20\\text{{ dB/dekade}}$ di atas frekuensi cutoff.
+    - Frekuensi cutoff f_c = 1 / (2πRC) = **{f_c:.2f} Hz**.
+    - Rangkaian berfungsi sebagai **Low-Pass Filter (LPF)** pasif orde 1 dengan pelemahan -20 dB/dekade di atas frekuensi cutoff.
 
     **Aplikasi Praktis di Industri & Laboratorium**
     - 🔋 Peredam lonjakan tegangan (*snubber*) dan filter ripple power supply DC.
@@ -71,10 +71,10 @@ elif circuit == "RC Discharging":
     st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
     **Dinamika Pengosongan Energi Kapasitor**
-    - Konstanta waktu pengosongan $\\tau = RC =$ **{tau*1000:.4f} ms**.
-    - Pada $t = \\tau$, sisa tegangan tinggal **36.8%** dari tegangan awal $V_0$.
-    - Waktu paruh tegangan ($V(t) = 0.5 V_0$) dicapai tepat pada $t_{{1/2}} = \\tau \\ln(2) =$ **{t_half*1000:.4f} ms**.
-    - Setelah $5\\tau =$ **{5*tau*1000:.4f} ms**, energi elektrostatik tersisa $< 0.7\\%$, kapasitor aman disentuh.
+    - Konstanta waktu pengosongan τ = RC = **{tau*1000:.4f} ms**.
+    - Pada t = τ, sisa tegangan tinggal **36.8%** dari tegangan awal V0.
+    - Waktu paruh tegangan (V(t) = 0.5 V0) dicapai tepat pada t_1/2 = τ ln(2) = **{t_half*1000:.4f} ms**.
+    - Setelah 5τ = **{5*tau*1000:.4f} ms**, energi elektrostatik tersisa < 0.7%, kapasitor aman disentuh.
 
     **Aplikasi Teknik Elektro**
     - ⚡ Sirkuit pembuang muatan (*bleeder resistor*) pada catu daya tegangan tinggi untuk keselamatan teknisi.
@@ -100,13 +100,13 @@ elif circuit in ["RLC Seri (Impedansi)", "RLC Impedansi"]:
     st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
     **Kondisi Resonansi Seri**
-    - Pada frekuensi resonansi $f_r =$ **{f_r:.2f} Hz**, reaktansi induktif $X_L$ meniadakan reaktansi kapasitif $X_C$ ($X_L = X_C$).
-    - Nilai impedansi total mencapai minimum absolut: $|Z|_{{min}} = R =$ **{R_opt:.3f} Ω** (murni resistif).
+    - Pada frekuensi resonansi f_r = **{f_r:.2f} Hz**, reaktansi induktif X_L meniadakan reaktansi kapasitif X_C (X_L = X_C).
+    - Nilai impedansi total mencapai minimum absolut: |Z|_min = R = **{R_opt:.3f} Ω** (murni resistif).
     - Arus sirkuit mencapai puncak maksimal pada frekuensi ini.
 
     **Selektivitas & Faktor Kualitas (Q-Factor)**
-    - Faktor Kualitas $Q =$ **{Q:.3f}** ({'Resonansi Sangat Tajam (High-Q)' if Q > 10 else 'Resonansi Menengah' if Q >= 1 else 'Broadband Rendah'}).
-    - Lebar pita frekuensi $-3\\text{{ dB}}$ (*Bandwidth*) $BW = f_r / Q =$ **{BW:.2f} Hz**.
+    - Faktor Kualitas Q = **{Q:.3f}** ({'Resonansi Sangat Tajam (High-Q)' if Q > 10 else 'Resonansi Menengah' if Q >= 1 else 'Broadband Rendah'}).
+    - Lebar pita frekuensi -3 dB (*Bandwidth*) BW = f_r / Q = **{BW:.2f} Hz**.
 
     **Aplikasi Praktis**
     - 📻 Sirkuit tuner penerima gelombang radio dan filter notch pemotong noise 50/60 Hz.
@@ -131,9 +131,9 @@ elif circuit == "Band-Pass Filter RLC":
     st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
     **Performa Filtrasi Frekuensi**
-    - Sinyal pada frekuensi tengah $f_0 =$ **{f0_opt:.2f} Hz** diteruskan sempurna tanpa atenuasi ($H = 1.0$, $0\\text{{ dB}}$).
-    - Rentang frekuensi yang diloloskan (antara batas $-3\\text{{ dB}}$) selebar **{BW_opt:.2f} Hz**.
-    - Sinyal frekuensi rendah ($f \\ll f_0$) diblokir oleh kapasitor $C$, dan sinyal frekuensi tinggi ($f \\gg f_0$) diblokir oleh induktor $L$.
+    - Sinyal pada frekuensi tengah f_0 = **{f0_opt:.2f} Hz** diteruskan sempurna tanpa atenuasi (H = 1.0, 0 dB).
+    - Rentang frekuensi yang diloloskan (antara batas -3 dB) selebar **{BW_opt:.2f} Hz**.
+    - Sinyal frekuensi rendah (f << f_0) diblokir oleh kapasitor C, dan sinyal frekuensi tinggi (f >> f_0) diblokir oleh induktor L.
 
     **Aplikasi Teknik Telekomunikasi & Audio**
     - 🎵 Equalizer audio grafis pada kanal frekuensi menengah (*midrange band*).
@@ -158,10 +158,10 @@ elif circuit in ["Amplifier", "Amplifier (Single-Pole)"]:
     **Karakteristik Penguatan Sinyal**
     - Penguatan sinyal frekuensi rendah (DC) adalah **{A0_opt:.2f}×** atau **{A0_dB:.2f} dB**.
     - Batas frekuensi operasi optimal (*bandwidth efektif*) mencapai **{fc_opt:.2f} Hz**.
-    - Di atas frekuensi cutoff $f_c$, penguatan menurun dengan laju $-20\\text{{ dB/dekade}}$ karena efek kapasitansi internal transistor/op-amp.
+    - Di atas frekuensi cutoff f_c, penguatan menurun dengan laju -20 dB/dekade karena efek kapasitansi internal transistor/op-amp.
 
     **Konstansi Gain-Bandwidth Product (GBW)**
-    - Nilai $GBW = A_0 \\times f_c =$ **{gbw:.2e} Hz** konstan pada penguat umpan balik.
+    - Nilai GBW = A0 × f_c = **{gbw:.2e} Hz** konstan pada penguat umpan balik.
     - Menurunkan gain akan memperluas bandwidth secara linier, dan sebaliknya.
     """)
     st.info(f"💡 **Kesimpulan**: Amplifier mampu bekerja stabil pada domain frekuensi di bawah {fc_opt:.1f} Hz.")
@@ -176,13 +176,13 @@ elif circuit == "Dioda":
         p_diss = V_D * I_D
         st.markdown(f"""
         **Titik Kerja Operasi (*Q-Point*) Dioda**
-        - Tegangan jatuh maju ($V_D$) = **{V_D:.4f} V**.
-        - Arus maju ($I_D$) = **{I_D*1000:.4f} mA**.
-        - Daya disipasi termal ($P_D = V_D \\times I_D$) = **{p_diss*1000:.4f} mW**.
+        - Tegangan jatuh maju (V_D) = **{V_D:.4f} V**.
+        - Arus maju (I_D) = **{I_D*1000:.4f} mA**.
+        - Daya disipasi termal (P_D = V_D × I_D) = **{p_diss*1000:.4f} mW**.
 
         **Interpretasi Karakteristik**
-        - Dioda silikon beroperasi normal pada daerah konduksi aktif ($0.6\\text{--}0.7\\text{{ V}}$).
-        - Nilai disipasi daya {p_diss*1000:.2f} mW aman jauh di bawah batas maksimum rating komponen standar (umumnya $250\\text{--}500\\text{{ mW}}$).
+        - Dioda silikon beroperasi normal pada daerah konduksi aktif (0.6 s/d 0.7 V).
+        - Nilai disipasi daya {p_diss*1000:.2f} mW aman jauh di bawah batas maksimum rating komponen standar (umumnya 250 s/d 500 mW).
         """)
     else:
         st.info("💡 Jalankan Newton-Raphson untuk dioda pada menu Numerical Computation untuk melihat titik operasi.")
@@ -201,9 +201,9 @@ elif circuit == "Transistor BJT":
     st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
     **Karakteristik Sambungan Base-Emitter BJT**
-    - Arus saturasi balik $I_s =$ **{Is_opt:.3e} A** mencerminkan area sambungan silikon dan tingkat doping basis.
-    - Tegangan termal hasil optimasi $V_T =$ **{Vt_opt*1000:.2f} mV** (nilai ideal pada suhu ruang 25°C adalah $25.85\\text{{ mV}}$).
-    - Transkonduktansi sinyal kecil pada bias $I_C = 1\\text{{ mA}}$ adalah $g_m = I_C / V_T =$ **{gm_at_1mA*1000:.2f} mS**.
+    - Arus saturasi balik I_s = **{Is_opt:.3e} A** mencerminkan area sambungan silikon dan tingkat doping basis.
+    - Tegangan termal hasil optimasi V_T = **{Vt_opt*1000:.2f} mV** (nilai ideal pada suhu ruang 25°C adalah 25.85 mV).
+    - Transkonduktansi sinyal kecil pada bias I_C = 1 mA adalah g_m = I_C / V_T = **{gm_at_1mA*1000:.2f} mS**.
 
     **Aplikasi Rangkaian**
     - Penguat sinyal kecil (*Common Emitter*), saklar logika digital transistor, dan cermin arus (*current mirror*).
@@ -216,7 +216,7 @@ col_a, col_b = st.columns(2)
 
 with col_a:
     st.markdown("### Gradient Descent")
-    if "history" in result:
+    if "history" in result and "cost" in result["history"] and len(result["history"]["cost"]) > 0:
         iters = result.get("iterations", 0)
         conv  = result.get("converged", False)
         cost0 = result["history"]["cost"][0]
