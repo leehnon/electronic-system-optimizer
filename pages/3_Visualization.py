@@ -2,13 +2,15 @@ import streamlit as st
 import numpy as np
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from modules.styles import inject_css
 from modules.visualization import (plot_rc_charging, plot_rlc_impedance, plot_amplifier_gain,
                                     plot_convergence, plot_newton_raphson_convergence,
                                     plot_residuals, plot_sensitivity, plot_diode_iv)
 from modules.evaluation import evaluate_metrics, parameter_sensitivity, convergence_rate
 
 st.set_page_config(page_title="Visualization", page_icon="📈", layout="wide")
-st.title("📈 Visualization")
+inject_css()
+st.title("Visualization")
 st.markdown("Grafik interaktif hasil optimasi parameter elektronika.")
 
 has_gd = "gd_result" in st.session_state

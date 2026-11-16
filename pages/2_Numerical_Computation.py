@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from modules.styles import inject_css
 from modules.gradient_descent import (gradient_descent,
     rlc_impedance_error, rlc_impedance_grad,
     rc_voltage_error,   rc_voltage_grad,
@@ -12,7 +13,8 @@ from modules.visualization import (plot_convergence, plot_newton_raphson_converg
                                     plot_rc_charging, plot_rlc_impedance, plot_amplifier_gain)
 
 st.set_page_config(page_title="Numerical Computation", page_icon="🔢", layout="wide")
-st.title("🔢 Numerical Computation")
+inject_css()
+st.title("Numerical Computation")
 
 if "data" not in st.session_state:
     st.warning("⚠️ Belum ada data! Silakan generate atau upload data di menu **Data Management** dulu.")

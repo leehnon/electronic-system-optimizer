@@ -1,4 +1,7 @@
 import streamlit as st
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from modules.styles import inject_css
 
 st.set_page_config(
     page_title="ElectronicSystem Parameter Optimizer",
@@ -7,128 +10,119 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
-st.markdown("""
-<style>
-    .main-header {
-        background: linear-gradient(90deg, #1f77b4 0%, #0d4f8b 100%);
-        padding: 20px 30px;
-        border-radius: 12px;
-        margin-bottom: 24px;
-    }
-    .main-header h1 { color: white; margin: 0; font-size: 1.9rem; }
-    .main-header p  { color: #d0e8ff; margin: 6px 0 0; font-size: 0.95rem; }
+inject_css()
 
-    .info-card {
-        background: #f0f6ff;
-        color: #1e293b;
-        border-left: 4px solid #1f77b4;
-        border-radius: 8px;
-        padding: 16px 20px;
-        margin: 10px 0;
-    }
-    .metric-card {
-        background: white;
-        color: #1e293b;
-        border: 1px solid #e0e0e0;
-        border-radius: 10px;
-        padding: 16px;
-        text-align: center;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-    }
-    .metric-card h2 { color: #1f77b4; margin: 0; font-size: 1.8rem; }
-    .metric-card p  { color: #475569; margin: 4px 0 0; font-size: 0.85rem; font-weight: 500; }
+# ── Page Header ───────────────────────────────────────────────────────────────
+st.title("ElectronicSystem Parameter Optimizer")
+st.markdown(
+    "Optimasi parameter prototipe elektronika menggunakan metode numerik "
+    "**Gradient Descent** dan **Newton-Raphson** — dari data simulasi maupun pengukuran riil."
+)
 
-    /* Navigasi sidebar */
-    [data-testid="stSidebarNav"] span {
-        font-weight: 600;
-        font-size: 0.95rem;
-    }
-    .stTabs [data-baseweb="tab"] { font-weight: 600; }
-</style>
-""", unsafe_allow_html=True)
+st.divider()
 
-# ── Header ────────────────────────────────────────────────────────────────────
-st.markdown("""
-<div class="main-header">
-    <h1>⚡ ElectronicSystem Parameter Optimizer</h1>
-    <p>Sistem Optimalisasi Parameter Prototipe Elektronika</p>
-</div>
-""", unsafe_allow_html=True)
+# ── Stat Row ──────────────────────────────────────────────────────────────────
+c1, c2, c3, c4 = st.columns(4)
+c1.metric("Metode Numerik",    "GD + NR")
+c2.metric("Studi Kasus",       "4 Rangkaian")
+c3.metric("Metrik Validasi",   "MSE · RMSE · R²")
+c4.metric("Format Output",     "TXT · CSV")
 
-# ── Overview Cards ────────────────────────────────────────────────────────────
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.markdown("""<div class="metric-card">
-        <h2>🔁</h2><p>Gradient Descent</p></div>""", unsafe_allow_html=True)
-with col2:
-    st.markdown("""<div class="metric-card">
-        <h2>📐</h2><p>Newton-Raphson</p></div>""", unsafe_allow_html=True)
-with col3:
-    st.markdown("""<div class="metric-card">
-        <h2>📊</h2><p>4 Jenis Rangkaian</p></div>""", unsafe_allow_html=True)
-with col4:
-    st.markdown("""<div class="metric-card">
-        <h2>✅</h2><p>Validasi Numerik</p></div>""", unsafe_allow_html=True)
+st.markdown("## Tentang Sistem")
 
-st.markdown("---")
+col_l, col_r = st.columns([3, 2], gap="large")
 
-# ── Deskripsi Proyek ──────────────────────────────────────────────────────────
-st.markdown("## 📋 Deskripsi Proyek")
-
-col_l, col_r = st.columns([3, 2])
 with col_l:
     st.markdown("""
-    **ElectronicSystem Parameter Optimizer** adalah sistem berbasis dashboard interaktif untuk:
-
-    - 🔧 **Mengoptimasi parameter** rangkaian elektronika (R, L, C, Gain, frekuensi cutoff)
-    - 📈 **Menerapkan algoritma numerik**: Gradient Descent & Newton-Raphson
-    - 🧪 **Studi kasus terapan**: RC charging, RLC impedansi, Amplifier, Dioda
-    - 📉 **Visualisasi** konvergensi, residual, dan perbandingan model vs data
-    - 📋 **Laporan** otomatis hasil optimasi
-
-    > Proyek ini memenuhi persyaratan tugas mata kuliah Pengujian & Diagnostik.
+    Dashboard ini membantu **identifikasi dan optimasi parameter** komponen elektronika 
+    dari data pengukuran atau simulasi. Cocok digunakan untuk:
     """)
 
-with col_r:
-    st.markdown("""
-    <div class="info-card">
-    <strong>Informasi Proyek</strong><br><br>
-    🏷️ <b>Bidang:</b> Pengujian & Diagnostik<br>
-    🔢 <b>Algoritma:</b> Gradient Descent, Newton-Raphson, Simulasi<br>
-    📦 <b>Sumber Data:</b> Simulasi / Riil Percobaan
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-# ── Navigasi ──────────────────────────────────────────────────────────────────
-st.markdown("## 🗺️ Navigasi Menu")
-
-menu_items = [
-    ("📊", "1 - Data Management",        "Kelola dan generate data rangkaian elektronika"),
-    ("🔢", "2 - Numerical Computation",  "Jalankan Gradient Descent & Newton-Raphson"),
-    ("📈", "3 - Visualization",          "Grafik interaktif hasil fitting & konvergensi"),
-    ("✅", "4 - Evaluation",             "Hitung MSE, RMSE, R², sensitivitas parameter"),
-    ("💡", "5 - Engineering Interp.",    "Interpretasi teknik hasil optimasi"),
-    ("📄", "6 - Report",                 "Export laporan PDF / CSV"),
-]
-
-cols = st.columns(3)
-for i, (icon, title, desc) in enumerate(menu_items):
-    with cols[i % 3]:
+    rows = [
+        ("🔧", "Karakterisasi Komponen",    "Estimasi nilai R, L, C, A₀, f_c dari data terukur"),
+        ("📐", "Fitting Kurva",             "Cocokkan model matematis dengan data eksperimen"),
+        ("🔁", "Analisis Frekuensi",        "Temukan frekuensi resonansi RLC dan bandwidth amplifier"),
+        ("🔴", "Titik Operasi Nonlinear",   "Solusi numerik rangkaian dioda dan transistor"),
+    ]
+    for icon, title, desc in rows:
         st.markdown(f"""
-        <div style="background:#f8faff;border:1px solid #d0e0f0;border-radius:10px;
-                    padding:16px;margin:8px 0;text-align:center;">
-            <span style="font-size:2rem;">{icon}</span>
-            <p style="font-weight:700;color:#1f77b4;margin:8px 0 4px;">{title}</p>
-            <p style="color:#666;font-size:0.85rem;margin:0;">{desc}</p>
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;">
+            <span style="font-size:1.1rem;margin-top:1px;">{icon}</span>
+            <div>
+                <span style="font-weight:600;color:#1c2128;font-size:0.875rem;">{title}</span><br>
+                <span style="color:#57606a;font-size:0.82rem;">{desc}</span>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
-st.markdown("---")
-st.markdown("""
-<p style="text-align:center;color:#999;font-size:0.82rem;">
-⚡ ElectronicSystem Parameter Optimizer
-</p>
-""", unsafe_allow_html=True)
+with col_r:
+    st.markdown("""
+    <div style="background:white;border:1px solid #d0d7de;border-radius:8px;padding:20px 24px;">
+        <p style="font-size:0.72rem;font-weight:700;color:#57606a;text-transform:uppercase;
+                  letter-spacing:0.08em;margin:0 0 12px;">Stack Teknis</p>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#1c2128;
+                    line-height:2;margin:0;">
+            Python 3.x<br>
+            Streamlit<br>
+            NumPy &nbsp;/&nbsp; SciPy<br>
+            Plotly<br>
+            Pandas
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("## Alur Kerja")
+
+steps = [
+    ("01", "Data Management",         "Generate atau upload data pengukuran rangkaian elektronika"),
+    ("02", "Numerical Computation",   "Jalankan Gradient Descent dan Newton-Raphson"),
+    ("03", "Visualization",           "Analisis grafik fitting, konvergensi, dan residual"),
+    ("04", "Evaluation",              "Validasi hasil: MSE, R², MAPE, dan sensitivitas parameter"),
+    ("05", "Engineering Interp.",     "Interpretasi makna teknik dari parameter yang ditemukan"),
+    ("06", "Report",                  "Ekspor hasil optimasi ke file TXT atau CSV"),
+]
+
+cols = st.columns(3, gap="small")
+for i, (num, title, desc) in enumerate(steps):
+    with cols[i % 3]:
+        st.markdown(f"""
+        <div class="step-card">
+            <p class="step-num">Langkah {num}</p>
+            <p class="step-title">{title}</p>
+            <p class="step-desc">{desc}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.divider()
+
+# ── Rangkaian yang Didukung ────────────────────────────────────────────────────
+st.markdown("## Rangkaian yang Didukung")
+
+rc_col, rlc_col, amp_col, diode_col = st.columns(4, gap="small")
+
+circuits = [
+    (rc_col,    "#0969da", "RC",        "Charging",     "Parameter: R, C, τ",         "V(t) = Vᵢₙ·(1−e⁻ᵗ/τ)"),
+    (rlc_col,   "#1a7f37", "RLC",       "Impedansi",    "Parameter: R, L, C, f_r",    "|Z(f)| vs frekuensi"),
+    (amp_col,   "#7d4e00", "Amplifier", "Single-Pole",  "Parameter: A₀, f_cutoff",    "G(f) = A₀/√(1+(f/fc)²)"),
+    (diode_col, "#82071e", "Dioda",     "Karakteristik","Parameter: V_D, I_D",         "Model Shockley"),
+]
+
+for col, color, ctype, csub, params, formula in circuits:
+    with col:
+        st.markdown(f"""
+        <div style="background:white;border:1px solid #d0d7de;border-radius:8px;
+                    padding:16px;text-align:center;height:100%;">
+            <div style="width:36px;height:36px;border-radius:8px;background:{color}18;
+                        display:flex;align-items:center;justify-content:center;
+                        margin:0 auto 10px;border:1px solid {color}40;">
+                <span style="font-size:0.75rem;font-weight:700;color:{color};">{ctype}</span>
+            </div>
+            <p style="font-weight:700;color:#1c2128;font-size:0.9rem;margin:0 0 2px;">{ctype}</p>
+            <p style="color:#57606a;font-size:0.75rem;margin:0 0 10px;">{csub}</p>
+            <p style="font-size:0.72rem;color:#57606a;margin:0 0 4px;">{params}</p>
+            <code style="font-size:0.68rem;color:{color};">{formula}</code>
+        </div>
+        """, unsafe_allow_html=True)
+
+st.divider()
+st.caption("ElectronicSystem Parameter Optimizer · Pengujian & Diagnostik")

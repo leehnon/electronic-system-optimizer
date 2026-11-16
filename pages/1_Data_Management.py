@@ -3,13 +3,15 @@ import numpy as np
 import pandas as pd
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from modules.styles import inject_css
 from modules.data_generator import (generate_rc_data, generate_rlc_data,
                                      generate_amplifier_data, generate_diode_data)
 from modules.visualization import (plot_rc_charging, plot_rlc_impedance,
                                     plot_amplifier_gain, plot_diode_iv)
 
 st.set_page_config(page_title="Data Management", page_icon="📊", layout="wide")
-st.title("📊 Data Management")
+inject_css()
+st.title("Data Management")
 st.markdown("Generate atau upload data rangkaian elektronika untuk optimasi parameter.")
 
 # ── Pilih jenis rangkaian ──────────────────────────────────────────────────────

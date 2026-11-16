@@ -3,11 +3,13 @@ import numpy as np
 import pandas as pd
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from modules.styles import inject_css
 from modules.evaluation import evaluate_metrics, parameter_sensitivity, convergence_rate
 from modules.visualization import plot_residuals, plot_sensitivity
 
 st.set_page_config(page_title="Evaluation", page_icon="✅", layout="wide")
-st.title("✅ Evaluation — Validasi & Metrik Numerik")
+inject_css()
+st.title("Evaluation")
 st.markdown("Evaluasi akurasi model dan perbandingan hasil numerik vs referensi.")
 
 if "gd_result" not in st.session_state:
