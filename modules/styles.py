@@ -19,15 +19,22 @@ html, body, [data-testid="stApp"] {
 .block-container {
     padding: 2rem 3rem 4rem !important;
     max-width: 1160px !important;
+    animation: fadeInContent 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes fadeInContent {
+    0% { opacity: 0.65; transform: translateY(2px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 /* ══════════════════════════════════════════════════════
-   SIDEBAR — Clean, Light & High Contrast
+   SIDEBAR — Pure Clean White & High Contrast Dark Text
 ══════════════════════════════════════════════════════ */
-[data-testid="stSidebar"] {
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div:first-child {
     background-color: #ffffff !important;
     border-right: 1px solid #e2e8f0 !important;
-    box-shadow: 1px 0 3px rgba(0, 0, 0, 0.02) !important;
+    box-shadow: 1px 0 4px rgba(0, 0, 0, 0.03) !important;
 }
 
 /* Brand header at top of sidebar */
@@ -36,7 +43,7 @@ html, body, [data-testid="stApp"] {
     display: block;
     font-size: 0.95rem;
     font-weight: 700;
-    color: #0f172a;
+    color: #0f172a !important;
     padding: 20px 20px 14px;
     letter-spacing: -0.02em;
     border-bottom: 1px solid #f1f5f9;
@@ -44,9 +51,10 @@ html, body, [data-testid="stApp"] {
     font-family: 'Inter', sans-serif;
 }
 
-/* Sidebar Nav */
+/* Sidebar Nav Wrapper */
 [data-testid="stSidebarNav"] {
     padding: 0 !important;
+    background-color: #ffffff !important;
 }
 
 [data-testid="stSidebarNav"]::before {
@@ -54,19 +62,20 @@ html, body, [data-testid="stApp"] {
     display: block;
     font-size: 0.68rem;
     font-weight: 700;
-    color: #64748b;
+    color: #64748b !important;
     letter-spacing: 0.08em;
     padding: 0 20px 8px;
     text-transform: uppercase;
 }
 
+/* Ensure ALL text inside sidebar links is deeply dark and high contrast */
 [data-testid="stSidebarNav"] a {
     display: flex !important;
     align-items: center !important;
     padding: 8px 14px !important;
     margin: 3px 10px !important;
     border-radius: 8px !important;
-    color: #334155 !important;
+    color: #1e293b !important;
     font-size: 0.88rem !important;
     font-weight: 500 !important;
     text-decoration: none !important;
@@ -76,9 +85,11 @@ html, body, [data-testid="stApp"] {
 }
 
 [data-testid="stSidebarNav"] a span,
-[data-testid="stSidebarNav"] a p {
-    color: inherit !important;
-    font-weight: inherit !important;
+[data-testid="stSidebarNav"] a p,
+[data-testid="stSidebarNav"] a div {
+    color: #1e293b !important;
+    font-weight: 500 !important;
+    opacity: 1 !important;
 }
 
 [data-testid="stSidebarNav"] a:hover {
@@ -86,39 +97,53 @@ html, body, [data-testid="stApp"] {
     color: #0f172a !important;
 }
 
+[data-testid="stSidebarNav"] a:hover span,
+[data-testid="stSidebarNav"] a:hover p,
+[data-testid="stSidebarNav"] a:hover div {
+    color: #0f172a !important;
+}
+
+/* Active page in navigation */
 [data-testid="stSidebarNav"] a[aria-current="page"] {
     background: #eff6ff !important;
-    color: #1d4ed8 !important;
     border-left: 3px solid #2563eb !important;
-    font-weight: 600 !important;
 }
 
 [data-testid="stSidebarNav"] a[aria-current="page"] span,
-[data-testid="stSidebarNav"] a[aria-current="page"] p {
+[data-testid="stSidebarNav"] a[aria-current="page"] p,
+[data-testid="stSidebarNav"] a[aria-current="page"] div {
     color: #1d4ed8 !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
 }
 
 /* Replace "app" label with "🏠 Beranda" */
-[data-testid="stSidebarNav"] ul > li:first-child a p {
+[data-testid="stSidebarNav"] ul > li:first-child a p,
+[data-testid="stSidebarNav"] ul > li:first-child a span {
     font-size: 0 !important;
     color: transparent !important;
     position: relative !important;
     line-height: 1.4 !important;
 }
-[data-testid="stSidebarNav"] ul > li:first-child a p::before {
+[data-testid="stSidebarNav"] ul > li:first-child a p::before,
+[data-testid="stSidebarNav"] ul > li:first-child a span::before {
     content: "🏠 Beranda";
     font-size: 0.88rem !important;
-    color: inherit;
+    color: #1e293b !important;
     position: absolute;
     left: 0;
     top: 0;
     white-space: nowrap;
+    font-weight: 500 !important;
+}
+[data-testid="stSidebarNav"] ul > li:first-child a[aria-current="page"] p::before,
+[data-testid="stSidebarNav"] ul > li:first-child a[aria-current="page"] span::before {
+    color: #1d4ed8 !important;
+    font-weight: 700 !important;
 }
 
 /* Sidebar collapse button color */
 [data-testid="stSidebarCollapseButton"] button {
-    color: #475569 !important;
+    color: #334155 !important;
 }
 
 /* ══════════════════════════════════════════════════════
@@ -137,7 +162,7 @@ h2 {
     color: #0f172a !important;
     border-bottom: 1px solid #e2e8f0;
     padding-bottom: 0.5rem;
-    margin-top: 2rem !important;
+    margin-top: 1.75rem !important;
 }
 h3 {
     font-size: 0.98rem !important;

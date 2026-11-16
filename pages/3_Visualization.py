@@ -3,9 +3,12 @@ import numpy as np
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from modules.styles import inject_css
-from modules.visualization import (plot_rc_charging, plot_rlc_impedance, plot_amplifier_gain,
-                                    plot_convergence, plot_newton_raphson_convergence,
-                                    plot_residuals, plot_sensitivity, plot_diode_iv)
+from modules.visualization import (plot_rc_charging, plot_rc_discharging,
+                                    plot_rlc_impedance, plot_bandpass_filter,
+                                    plot_amplifier_gain, plot_diode_iv,
+                                    plot_bjt_ic_vbe, plot_convergence,
+                                    plot_newton_raphson_convergence,
+                                    plot_residuals, plot_sensitivity)
 from modules.evaluation import evaluate_metrics, parameter_sensitivity, convergence_rate
 from modules.data_generator import ensure_default_data
 
@@ -24,7 +27,7 @@ if not has_data:
     st.warning("⚠️ Belum ada data! Silakan ke menu **Data Management** terlebih dahulu.")
     st.stop()
 
-circuit = st.session_state.get("circuit", "")
+circuit = st.session_state.get("circuit", "RC Charging")
 df      = st.session_state["data"]
 true_p  = st.session_state.get("true_params", {})
 
@@ -38,13 +41,14 @@ with tab1:
         result = st.session_state["gd_result"]
         p_opt  = result["optimal_params"]
 
+        # 1. RC Charging
         if circuit == "RC Charging":
             t   = df["time_s"].values
             V   = df["voltage_V"].values
-            V_in = true_p.get("V_in", 5.0)
+            V_in = float(true_p.get("V_in", 5.0))
             R_opt, C_opt = p_opt
-            tau_opt = R_opt * C_opt
-            V_fitted = V_in * (1 - np.exp(-t / max(tau_opt, 1e-15)))
+            tau_opt = max(R_opt * C_opt, 1e-15)
+            V_fitted = V_in * (1 - np.exp(-t / tau_opt))
             st.plotly_chart(plot_rc_charging(t, V, V_fitted,
                                              tau_true=true_p.get("tau"),
                                              tau_fitted=tau_opt),
@@ -54,13 +58,32 @@ with tab1:
             st.session_state["y_true"]  = V
             st.session_state["y_pred"]  = V_fitted
 
-        elif circuit == "RLC Impedansi":
+        # 2. RC Discharging
+        elif circuit == "RC Discharging":
+            t  = df["time_s"].values
+            V  = df["voltage_V"].values
+            V0 = float(true_p.get("V0", 5.0))
+            R_opt, C_opt = p_opt
+            tau_opt = max(R_opt * C_opt, 1e-15)
+            V_fitted = V0 * np.exp(-t / tau_opt)
+            st.plotly_chart(plot_rc_discharging(t, V, V_fitted,
+                                                tau_true=true_p.get("tau"),
+                                                tau_fitted=tau_opt),
+                            use_container_width=True)
+            metrics = evaluate_metrics(V, V_fitted)
+            st.session_state["metrics"] = metrics
+            st.session_state["y_true"]  = V
+            st.session_state["y_pred"]  = V_fitted
+
+        # 3. RLC Seri
+        elif circuit in ["RLC Seri (Impedansi)", "RLC Impedansi"]:
             freqs = df["frequency_Hz"].values
             Z     = df["impedance_ohm"].values
             R_opt, L_opt, C_opt = p_opt
-            omega  = 2*np.pi*freqs
-            Z_fitted = np.sqrt(R_opt**2 + (omega*L_opt - 1/(omega*C_opt))**2)
-            f_r = 1/(2*np.pi*np.sqrt(max(L_opt,1e-15)*max(C_opt,1e-15)))
+            omega = 2 * np.pi * freqs
+            reactance = omega * L_opt - 1.0 / (omega * C_opt)
+            Z_fitted = np.sqrt(R_opt**2 + reactance**2)
+            f_r = 1.0 / (2 * np.pi * np.sqrt(max(L_opt, 1e-15) * max(C_opt, 1e-15)))
             st.plotly_chart(plot_rlc_impedance(freqs, Z, Z_fitted, f_r),
                             use_container_width=True)
             metrics = evaluate_metrics(Z, Z_fitted)
@@ -68,21 +91,59 @@ with tab1:
             st.session_state["y_true"]  = Z
             st.session_state["y_pred"]  = Z_fitted
 
-        elif circuit == "Amplifier":
-            freqs  = df["frequency_Hz"].values
-            G      = df["gain"].values
+        # 4. Band-Pass Filter RLC
+        elif circuit == "Band-Pass Filter RLC":
+            freqs = df["frequency_Hz"].values
+            gain  = df["gain_linear"].values
+            R_opt, L_opt, C_opt = p_opt
+            omega = 2 * np.pi * freqs
+            reactance = omega * L_opt - 1.0 / (omega * C_opt)
+            H_fitted = R_opt / np.sqrt(R_opt**2 + reactance**2)
+            f0_opt = 1.0 / (2 * np.pi * np.sqrt(max(L_opt, 1e-15) * max(C_opt, 1e-15)))
+            Q_opt = (1.0 / R_opt) * np.sqrt(L_opt / C_opt)
+            BW_opt = f0_opt / max(Q_opt, 1e-6)
+            st.plotly_chart(plot_bandpass_filter(freqs, gain, H_fitted, f_center=f0_opt, bw=BW_opt),
+                            use_container_width=True)
+            metrics = evaluate_metrics(gain, H_fitted)
+            st.session_state["metrics"] = metrics
+            st.session_state["y_true"]  = gain
+            st.session_state["y_pred"]  = H_fitted
+
+        # 5. Amplifier
+        elif circuit in ["Amplifier", "Amplifier (Single-Pole)"]:
+            freqs = df["frequency_Hz"].values
+            G     = df["gain"].values
             A0_opt, fc_opt = p_opt
-            G_fitted = A0_opt / np.sqrt(1 + (freqs/max(fc_opt,1e-3))**2)
+            G_fitted = A0_opt / np.sqrt(1 + (freqs / max(fc_opt, 1e-3))**2)
             st.plotly_chart(plot_amplifier_gain(freqs, G, G_fitted, fc_opt),
                             use_container_width=True)
             metrics = evaluate_metrics(G, G_fitted)
             st.session_state["metrics"] = metrics
             st.session_state["y_true"]  = G
             st.session_state["y_pred"]  = G_fitted
+
+        # 7. Transistor BJT
+        elif circuit == "Transistor BJT":
+            vbe = df["V_be_V"].values
+            ic  = df["I_c_A"].values
+            Is_opt, Vt_opt = p_opt
+            ic_fitted = Is_opt * (np.exp(np.clip(vbe / Vt_opt, 0, 40)) - 1)
+            st.plotly_chart(plot_bjt_ic_vbe(vbe, ic, ic_fitted), use_container_width=True)
+            metrics = evaluate_metrics(ic, ic_fitted)
+            st.session_state["metrics"] = metrics
+            st.session_state["y_true"]  = ic
+            st.session_state["y_pred"]  = ic_fitted
+
+        # Dioda
+        elif circuit == "Dioda":
+            st.plotly_chart(plot_diode_iv(df["V_source_V"], df["V_diode_V"], df["I_diode_A"]),
+                            use_container_width=True)
     else:
         if circuit == "Dioda":
-            st.plotly_chart(plot_diode_iv(df["V_source_V"], df["V_diode_V"],
-                                          df["I_diode_A"]), use_container_width=True)
+            st.plotly_chart(plot_diode_iv(df["V_source_V"], df["V_diode_V"], df["I_diode_A"]),
+                            use_container_width=True)
+        elif circuit == "Transistor BJT":
+            st.plotly_chart(plot_bjt_ic_vbe(df["V_be_V"], df["I_c_A"]), use_container_width=True)
         else:
             st.info("💡 Jalankan Gradient Descent terlebih dahulu di menu **Numerical Computation**.")
 
@@ -97,9 +158,10 @@ with tab2:
             st.plotly_chart(plot_convergence(st.session_state["gd_result"]["history"]),
                             use_container_width=True)
             cr = convergence_rate(st.session_state["gd_result"]["history"]["cost"])
-            if cr: st.metric("Rata-rata Rasio Konvergensi", f"{cr:.4f}")
+            if cr:
+                st.metric("Rata-rata Rasio Konvergensi", f"{cr:.4f}")
         else:
-            st.info("Belum ada hasil Gradient Descent.")
+            st.info("Belum ada riwayat Gradient Descent.")
 
     with col_b:
         st.markdown("#### Newton-Raphson")
@@ -107,7 +169,7 @@ with tab2:
             st.plotly_chart(plot_newton_raphson_convergence(
                 st.session_state["nr_result"]["history"]), use_container_width=True)
         else:
-            st.info("Belum ada hasil Newton-Raphson.")
+            st.info("Belum ada riwayat Newton-Raphson.")
 
 # ── Tab 3: Residual ───────────────────────────────────────────────────────────
 with tab3:
@@ -116,7 +178,7 @@ with tab3:
         metrics = st.session_state["metrics"]
         residuals = metrics["Residuals"]
 
-        col1,col2,col3,col4,col5 = st.columns(5)
+        col1, col2, col3, col4, col5 = st.columns(5)
         col1.metric("MSE",  f"{metrics['MSE']:.4e}")
         col2.metric("RMSE", f"{metrics['RMSE']:.4e}")
         col3.metric("MAE",  f"{metrics['MAE']:.4e}")
@@ -125,39 +187,63 @@ with tab3:
 
         st.plotly_chart(plot_residuals(residuals), use_container_width=True)
     else:
-        st.info("💡 Jalankan fitting terlebih dahulu untuk melihat residual.")
+        st.info("💡 Jalankan komputasi atau buka tab 'Data & Fitting' terlebih dahulu.")
 
 # ── Tab 4: Sensitivitas ───────────────────────────────────────────────────────
 with tab4:
     st.markdown("### 🎛️ Analisis Sensitivitas Parameter")
     if has_gd:
-        result  = st.session_state["gd_result"]
-        p_opt   = result["optimal_params"]
+        result = st.session_state["gd_result"]
+        p_opt  = result["optimal_params"]
         circuit = st.session_state.get("circuit", "")
+
+        cost_f = None
+        names = []
 
         if circuit == "RC Charging":
             from modules.gradient_descent import rc_voltage_error
             t, V = df["time_s"].values, df["voltage_V"].values
-            V_in = true_p.get("V_in", 5.0)
+            V_in = float(true_p.get("V_in", 5.0))
             cost_f = lambda p: rc_voltage_error(p, t, V, V_in)
             names  = ["R (Ω)", "C (F)"]
-        elif circuit == "RLC Impedansi":
+
+        elif circuit == "RC Discharging":
+            from modules.gradient_descent import rc_discharge_error
+            t, V = df["time_s"].values, df["voltage_V"].values
+            V0 = float(true_p.get("V0", 5.0))
+            cost_f = lambda p: rc_discharge_error(p, t, V, V0)
+            names  = ["R (Ω)", "C (F)"]
+
+        elif circuit in ["RLC Seri (Impedansi)", "RLC Impedansi"]:
             from modules.gradient_descent import rlc_impedance_error
             freqs = df["frequency_Hz"].values
             Z     = df["impedance_ohm"].values
             cost_f = lambda p: rlc_impedance_error(p, freqs, Z)
             names  = ["R (Ω)", "L (H)", "C (F)"]
-        elif circuit == "Amplifier":
+
+        elif circuit == "Band-Pass Filter RLC":
+            from modules.gradient_descent import bandpass_filter_error
+            freqs = df["frequency_Hz"].values
+            gain  = df["gain_linear"].values
+            cost_f = lambda p: bandpass_filter_error(p, freqs, gain)
+            names  = ["R (Ω)", "L (H)", "C (F)"]
+
+        elif circuit in ["Amplifier", "Amplifier (Single-Pole)"]:
             from modules.gradient_descent import amplifier_gain_error
             freqs = df["frequency_Hz"].values
             G     = df["gain"].values
             cost_f = lambda p: amplifier_gain_error(p, freqs, G)
             names  = ["A0 (gain)", "f_c (Hz)"]
-        else:
-            cost_f = None; names = []
+
+        elif circuit == "Transistor BJT":
+            from modules.gradient_descent import bjt_collector_error
+            vbe = df["V_be_V"].values
+            ic  = df["I_c_A"].values
+            cost_f = lambda p: bjt_collector_error(p, vbe, ic)
+            names  = ["Is (A)", "Vt (V)"]
 
         if cost_f:
-            perturb = st.slider("Perturbasi Parameter (%)", 1, 20, 5) / 100
+            perturb = st.slider("Perturbasi Parameter (%)", 1, 20, 5) / 100.0
             sens_df = parameter_sensitivity(cost_f, p_opt, names, perturb)
             st.plotly_chart(plot_sensitivity(sens_df), use_container_width=True)
             st.dataframe(sens_df.style.format({

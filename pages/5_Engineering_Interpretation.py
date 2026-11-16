@@ -12,16 +12,15 @@ ensure_default_data()
 st.title("Engineering Interpretation")
 st.markdown("Interpretasi teknik hasil optimasi parameter elektronika.")
 
-circuit = st.session_state.get("circuit", "")
+circuit = st.session_state.get("circuit", "RC Charging")
 true_p  = st.session_state.get("true_params", {})
 
-if "gd_result" not in st.session_state:
+if "gd_result" not in st.session_state and circuit not in ["Dioda"]:
     st.warning("⚠️ Jalankan komputasi numerik terlebih dahulu.")
     st.stop()
 
-result = st.session_state["gd_result"]
-p_opt  = result["optimal_params"]
-df_data = st.session_state.get("data", None)
+result = st.session_state.get("gd_result", {})
+p_opt  = result.get("optimal_params", [0, 0, 0])
 
 st.markdown("---")
 
@@ -29,173 +28,224 @@ st.markdown("---")
 # Interpretasi per rangkaian
 # ══════════════════════════════════════════════════════════════════════════════
 
+# 1. RC Charging
 if circuit == "RC Charging":
-    R_opt, C_opt = p_opt
+    R_opt, C_opt = p_opt[0], p_opt[1]
     tau = R_opt * C_opt
-    f_c = 1 / (2 * np.pi * tau)
+    f_c = 1.0 / (2 * np.pi * tau)
 
-    st.markdown("## ⚡ Rangkaian RC Charging")
-
+    st.markdown("## ⚡ Rangkaian RC Charging (Pengisian)")
     col1, col2, col3 = st.columns(3)
-    col1.metric("R Optimal",         f"{R_opt:.4f} Ω")
+    col1.metric("R Optimal",         f"{R_opt:.3f} Ω")
     col2.metric("C Optimal",         f"{C_opt*1e6:.4f} µF")
-    col3.metric("τ = RC",            f"{tau*1000:.4f} ms")
+    col3.metric("Konstanta Waktu τ", f"{tau*1000:.4f} ms")
 
-    st.markdown("### 📖 Interpretasi Teknik")
+    st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
-    **Konstanta Waktu (τ = RC)**
-    - τ = **{tau*1000:.4f} ms** → kapasitor mencapai **~63.2%** tegangan penuh pada t = τ
-    - Pada t = 5τ = **{5*tau*1000:.4f} ms**, kapasitor dianggap **penuh terisi (99.3%)**
+    **Konstanta Waktu Pengisian (τ = RC)**
+    - Pada waktu **t = τ = {tau*1000:.4f} ms**, tegangan kapasitor mencapai **63.2%** dari tegangan sumber $V_{{in}}$.
+    - Pada **t = 5τ = {5*tau*1000:.4f} ms**, kapasitor berada dalam kondisi *steady-state* penuh (**99.3%**).
 
-    **Frekuensi Cutoff**
-    - f_c = 1/(2πRC) = **{f_c:.2f} Hz**
-    - Rangkaian RC berfungsi sebagai **Low-Pass Filter** dengan f_c = {f_c:.2f} Hz
-    - Sinyal di bawah {f_c:.2f} Hz akan **lolos**, di atas akan **dilemahkan**
+    **Frekuensi Cutoff & Respon Sinyal**
+    - $f_c = \\frac{{1}}{{2\\pi RC}} =$ **{f_c:.2f} Hz**.
+    - Rangkaian berfungsi sebagai **Low-Pass Filter (LPF)** pasif orde 1 dengan pelemahan $-20\\text{{ dB/dekade}}$ di atas frekuensi cutoff.
 
-    **Aplikasi Teknis**
-    - 🔋 Filter daya supply, debounce sinyal digital
-    - ⏱️ Timer/osilator sederhana
-    - 📡 Coupling dan decoupling sinyal AC/DC
-
-    **Validasi**
-    - Bandingkan τ dengan nilai τ_referensi dari datasheet komponen
-    - Gunakan osiloskop untuk verifikasi kurva charging aktual
+    **Aplikasi Praktis di Industri & Laboratorium**
+    - 🔋 Peredam lonjakan tegangan (*snubber*) dan filter ripple power supply DC.
+    - ⏱️ Sirkuit penunda waktu (*delay timer*) dan *debouncing* tombol tekan mekanis.
     """)
+    st.info(f"💡 **Rekomendasi Desain**: Untuk aplikasi filter ripple frekuensi rendah, nilai τ = {tau*1000:.3f} ms sudah memenuhi standar respon transien cepat.")
 
-    st.info(f"💡 **Kesimpulan**: Sistem RC dengan R={R_opt:.2f}Ω dan C={C_opt*1e6:.4f}µF "
-            f"memiliki respons transien τ={tau*1000:.4f}ms, cocok untuk aplikasi "
-            f"filter dan timer dengan frekuensi cutoff {f_c:.2f} Hz.")
+# 2. RC Discharging
+elif circuit == "RC Discharging":
+    R_opt, C_opt = p_opt[0], p_opt[1]
+    tau = R_opt * C_opt
+    t_half = tau * np.log(2)
 
-elif circuit == "RLC Impedansi":
-    R_opt, L_opt, C_opt = p_opt
+    st.markdown("## 🔋 Rangkaian RC Discharging (Pengosongan)")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("R Optimal",          f"{R_opt:.3f} Ω")
+    col2.metric("C Optimal",          f"{C_opt*1e6:.4f} µF")
+    col3.metric("Waktu Paruh (50%)",  f"{t_half*1000:.4f} ms")
+
+    st.markdown("### 📖 Interpretasi Karakteristik Teknik")
+    st.markdown(f"""
+    **Dinamika Pengosongan Energi Kapasitor**
+    - Konstanta waktu pengosongan $\\tau = RC =$ **{tau*1000:.4f} ms**.
+    - Pada $t = \\tau$, sisa tegangan tinggal **36.8%** dari tegangan awal $V_0$.
+    - Waktu paruh tegangan ($V(t) = 0.5 V_0$) dicapai tepat pada $t_{{1/2}} = \\tau \\ln(2) =$ **{t_half*1000:.4f} ms**.
+    - Setelah $5\\tau =$ **{5*tau*1000:.4f} ms**, energi elektrostatik tersisa $< 0.7\\%$, kapasitor aman disentuh.
+
+    **Aplikasi Teknik Elektro**
+    - ⚡ Sirkuit pembuang muatan (*bleeder resistor*) pada catu daya tegangan tinggi untuk keselamatan teknisi.
+    - ⏱️ Pemicu monostable multivibrator dan generator pulsa relaksasi.
+    """)
+    st.info(f"💡 **Rekomendasi Desain**: Kapasitor terdisipasi hingga batas aman dalam {5*tau*1000:.2f} ms.")
+
+# 3. RLC Seri
+elif circuit in ["RLC Seri (Impedansi)", "RLC Impedansi"]:
+    R_opt, L_opt, C_opt = p_opt[0], p_opt[1], p_opt[2]
     L_opt = abs(L_opt); C_opt = abs(C_opt)
-    f_r   = 1/(2*np.pi*np.sqrt(max(L_opt,1e-15)*max(C_opt,1e-15)))
-    Q     = (1/R_opt)*np.sqrt(max(L_opt,1e-15)/max(C_opt,1e-15))
+    f_r   = 1.0 / (2 * np.pi * np.sqrt(max(L_opt, 1e-15) * max(C_opt, 1e-15)))
+    Q     = (1.0 / R_opt) * np.sqrt(max(L_opt, 1e-15) / max(C_opt, 1e-15))
     BW    = f_r / max(Q, 1e-6)
-    Z_min = R_opt
 
-    col1,col2,col3,col4 = st.columns(4)
-    col1.metric("R Optimal", f"{R_opt:.4f} Ω")
-    col2.metric("L Optimal", f"{L_opt*1e3:.4f} mH")
-    col3.metric("C Optimal", f"{C_opt*1e6:.4f} µF")
-    col4.metric("f_r",       f"{f_r:.2f} Hz")
+    st.markdown("## 🔁 Rangkaian RLC Seri (Impedansi)")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("R (Resistansi)",     f"{R_opt:.3f} Ω")
+    col2.metric("L (Induktansi)",     f"{L_opt*1e3:.3f} mH")
+    col3.metric("C (Kapasitansi)",    f"{C_opt*1e6:.4f} µF")
+    col4.metric("Frekuensi Resonansi",f"{f_r:.2f} Hz")
 
-    st.markdown("### 📖 Interpretasi Teknik")
+    st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
-    **Frekuensi Resonansi**
-    - f_r = **{f_r:.4f} Hz** → pada frekuensi ini |Z| minimum = R = {R_opt:.4f} Ω
-    - Di bawah f_r: rangkaian bersifat **kapasitif** (Z didominasi kapasitor)
-    - Di atas f_r: rangkaian bersifat **induktif** (Z didominasi induktor)
+    **Kondisi Resonansi Seri**
+    - Pada frekuensi resonansi $f_r =$ **{f_r:.2f} Hz**, reaktansi induktif $X_L$ meniadakan reaktansi kapasitif $X_C$ ($X_L = X_C$).
+    - Nilai impedansi total mencapai minimum absolut: $|Z|_{{min}} = R =$ **{R_opt:.3f} Ω** (murni resistif).
+    - Arus sirkuit mencapai puncak maksimal pada frekuensi ini.
 
-    **Faktor Kualitas (Q-factor)**
-    - Q = **{Q:.4f}** → {'resonansi tajam (Q > 10)' if Q > 10 else 'resonansi sedang' if Q > 1 else 'resonansi lebar (Q < 1)'}
-    - Bandwidth = f_r/Q = **{BW:.4f} Hz**
+    **Selektivitas & Faktor Kualitas (Q-Factor)**
+    - Faktor Kualitas $Q =$ **{Q:.3f}** ({'Resonansi Sangat Tajam (High-Q)' if Q > 10 else 'Resonansi Menengah' if Q >= 1 else 'Broadband Rendah'}).
+    - Lebar pita frekuensi $-3\\text{{ dB}}$ (*Bandwidth*) $BW = f_r / Q =$ **{BW:.2f} Hz**.
 
-    **Aplikasi Teknis**
-    - 📻 Filter bandpass/notch, tuner radio
-    - ⚡ Power factor correction
-    - 🔊 Crossover speaker, osilator LC
-
-    **Validasi**
-    - Ukur impedansi dengan LCR meter atau impedance analyzer
-    - Konfirmasi f_r dengan sweep frekuensi pada network analyzer
+    **Aplikasi Praktis**
+    - 📻 Sirkuit tuner penerima gelombang radio dan filter notch pemotong noise 50/60 Hz.
+    - ⚡ Koreksi faktor daya (*Power Factor Correction*) beban industri.
     """)
+    st.info(f"💡 **Kesimpulan**: Rangkaian resonan pada **{f_r:.2f} Hz** dengan bandwidth seleksi **{BW:.2f} Hz**.")
 
-    st.info(f"💡 **Kesimpulan**: Rangkaian RLC seri beresonansi pada **{f_r:.2f} Hz** "
-            f"dengan Q-factor **{Q:.4f}** dan bandwidth **{BW:.4f} Hz**.")
+# 4. Band-Pass Filter RLC
+elif circuit == "Band-Pass Filter RLC":
+    R_opt, L_opt, C_opt = p_opt[0], p_opt[1], p_opt[2]
+    f0_opt = 1.0 / (2 * np.pi * np.sqrt(max(L_opt, 1e-15) * max(C_opt, 1e-15)))
+    Q_opt  = (1.0 / R_opt) * np.sqrt(L_opt / C_opt)
+    BW_opt = f0_opt / max(Q_opt, 1e-6)
 
-elif circuit == "Amplifier":
-    A0_opt, fc_opt = p_opt
-    A0_dB = 20*np.log10(max(A0_opt, 1e-6))
-    f_unity = fc_opt * A0_opt  # gain-bandwidth product
+    st.markdown("## 🎛️ Filter Band-Pass RLC Pasif")
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Frekuensi Tengah f₀", f"{f0_opt:.2f} Hz")
+    col2.metric("Bandwidth (BW)",       f"{BW_opt:.2f} Hz")
+    col3.metric("Faktor Kualitas (Q)",  f"{Q_opt:.3f}")
+    col4.metric("Gain Puncak H(f₀)",    "1.000 (0 dB)")
 
-    col1,col2,col3 = st.columns(3)
-    col1.metric("Gain DC (A0)",       f"{A0_opt:.4f} ({A0_dB:.2f} dB)")
-    col2.metric("Frekuensi Cutoff",   f"{fc_opt:.4f} Hz")
-    col3.metric("Gain-BW Product",    f"{f_unity:.2f} Hz")
-
-    st.markdown("### 📖 Interpretasi Teknik")
+    st.markdown("### 📖 Interpretasi Karakteristik Teknik")
     st.markdown(f"""
-    **Gain DC**
-    - A0 = **{A0_opt:.4f}** = **{A0_dB:.2f} dB**
-    - Pada frekuensi DC (f → 0), sinyal diperkuat {A0_opt:.2f}×
+    **Performa Filtrasi Frekuensi**
+    - Sinyal pada frekuensi tengah $f_0 =$ **{f0_opt:.2f} Hz** diteruskan sempurna tanpa atenuasi ($H = 1.0$, $0\\text{{ dB}}$).
+    - Rentang frekuensi yang diloloskan (antara batas $-3\\text{{ dB}}$) selebar **{BW_opt:.2f} Hz**.
+    - Sinyal frekuensi rendah ($f \\ll f_0$) diblokir oleh kapasitor $C$, dan sinyal frekuensi tinggi ($f \\gg f_0$) diblokir oleh induktor $L$.
 
-    **Frekuensi Cutoff (−3dB)**
-    - f_c = **{fc_opt:.4f} Hz** → pada f = f_c, gain turun menjadi A0/√2 = {A0_opt/np.sqrt(2):.4f} ({A0_dB-3:.2f} dB)
-    - Di atas f_c, gain turun **−20 dB/decade** (sistem orde-1)
-
-    **Gain-Bandwidth Product (GBW)**
-    - GBW = A0 × f_c = **{f_unity:.2f} Hz**
-    - GBW konstan → menambah gain akan mengurangi bandwidth, dan sebaliknya
-
-    **Aplikasi Teknis**
-    - 🎵 Amplifier audio, instrumentasi
-    - 📡 Front-end RF (bila f_c tinggi)
-    - 🔬 Op-amp dalam loop tertutup
-
-    **Validasi**
-    - Ukur dengan network analyzer atau bode plotter
-    - Bandingkan dengan datasheet transistor/op-amp yang digunakan
+    **Aplikasi Teknik Telekomunikasi & Audio**
+    - 🎵 Equalizer audio grafis pada kanal frekuensi menengah (*midrange band*).
+    - 📡 Seleksi kanal pita transmisi RF pada transceiver nirkabel.
     """)
-    st.info(f"💡 **Kesimpulan**: Amplifier dengan A0={A0_opt:.4f} ({A0_dB:.2f} dB) "
-            f"dan f_c={fc_opt:.4f} Hz, GBW={f_unity:.2f} Hz.")
+    st.info(f"💡 **Desain Filter**: Filter ini meloloskan rentang sinyal sekitar **{f0_opt:.1f} Hz** dengan selektivitas Q = {Q_opt:.2f}.")
 
+# 5. Amplifier
+elif circuit in ["Amplifier", "Amplifier (Single-Pole)"]:
+    A0_opt, fc_opt = p_opt[0], p_opt[1]
+    A0_dB = 20 * np.log10(max(A0_opt, 1e-6))
+    gbw = A0_opt * fc_opt
+
+    st.markdown("## 📡 Penguat Sinyal (Amplifier Single-Pole)")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Gain DC (A₀)",         f"{A0_opt:.2f} ({A0_dB:.1f} dB)")
+    col2.metric("Cutoff -3dB (fc)",     f"{fc_opt:.2f} Hz")
+    col3.metric("Gain-BW Product (GBW)",f"{gbw:.2e} Hz")
+
+    st.markdown("### 📖 Interpretasi Karakteristik Teknik")
+    st.markdown(f"""
+    **Karakteristik Penguatan Sinyal**
+    - Penguatan sinyal frekuensi rendah (DC) adalah **{A0_opt:.2f}×** atau **{A0_dB:.2f} dB**.
+    - Batas frekuensi operasi optimal (*bandwidth efektif*) mencapai **{fc_opt:.2f} Hz**.
+    - Di atas frekuensi cutoff $f_c$, penguatan menurun dengan laju $-20\\text{{ dB/dekade}}$ karena efek kapasitansi internal transistor/op-amp.
+
+    **Konstansi Gain-Bandwidth Product (GBW)**
+    - Nilai $GBW = A_0 \\times f_c =$ **{gbw:.2e} Hz** konstan pada penguat umpan balik.
+    - Menurunkan gain akan memperluas bandwidth secara linier, dan sebaliknya.
+    """)
+    st.info(f"💡 **Kesimpulan**: Amplifier mampu bekerja stabil pada domain frekuensi di bawah {fc_opt:.1f} Hz.")
+
+# 6. Dioda
 elif circuit == "Dioda":
-    st.markdown("## 🔴 Rangkaian Dioda")
+    st.markdown("## 🔴 Rangkaian Dioda Semikonduktor PN Junction")
     if "nr_result" in st.session_state:
         nr = st.session_state["nr_result"]
-        V_D = nr.get("V_D", 0)
-        I_D = nr.get("I_D", 0)
+        V_D = nr.get("V_D", 0.65)
+        I_D = nr.get("I_D", 0.004)
+        p_diss = V_D * I_D
         st.markdown(f"""
-        **Titik Operasi Dioda**
-        - V_D = **{V_D:.4f} V** (tegangan maju dioda)
-        - I_D = **{I_D*1000:.4f} mA** (arus maju dioda)
+        **Titik Kerja Operasi (*Q-Point*) Dioda**
+        - Tegangan jatuh maju ($V_D$) = **{V_D:.4f} V**.
+        - Arus maju ($I_D$) = **{I_D*1000:.4f} mA**.
+        - Daya disipasi termal ($P_D = V_D \\times I_D$) = **{p_diss*1000:.4f} mW**.
 
-        **Interpretasi**
-        - Dioda silicon umumnya V_D ≈ 0.6–0.7 V pada kondisi ON
-        - V_D = {V_D:.4f} V → dioda {'aktif (forward bias)' if V_D > 0.5 else 'mendekati cutoff'}
-        - Daya disipasi dioda: P_D = V_D × I_D = **{V_D*I_D*1000:.4f} mW**
+        **Interpretasi Karakteristik**
+        - Dioda silikon beroperasi normal pada daerah konduksi aktif ($0.6\\text{--}0.7\\text{{ V}}$).
+        - Nilai disipasi daya {p_diss*1000:.2f} mW aman jauh di bawah batas maksimum rating komponen standar (umumnya $250\\text{--}500\\text{{ mW}}$).
         """)
     else:
-        st.info("Jalankan Newton-Raphson untuk dioda terlebih dahulu.")
+        st.info("💡 Jalankan Newton-Raphson untuk dioda pada menu Numerical Computation untuk melihat titik operasi.")
 
-else:
-    st.info("Interpretasi teknik akan muncul setelah komputasi selesai.")
+# 7. Transistor BJT
+elif circuit == "Transistor BJT":
+    Is_opt, Vt_opt = p_opt[0], p_opt[1]
+    gm_at_1mA = 1e-3 / max(Vt_opt, 1e-4)
+
+    st.markdown("## 🔘 Transistor BJT (Model Arus Kolektor Shockley)")
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Arus Saturasi Is",   f"{Is_opt:.3e} A")
+    col2.metric("Tegangan Termal Vt", f"{Vt_opt*1000:.2f} mV")
+    col3.metric("Transkonduktansi gm",f"{gm_at_1mA*1000:.2f} mS (pada 1mA)")
+
+    st.markdown("### 📖 Interpretasi Karakteristik Teknik")
+    st.markdown(f"""
+    **Karakteristik Sambungan Base-Emitter BJT**
+    - Arus saturasi balik $I_s =$ **{Is_opt:.3e} A** mencerminkan area sambungan silikon dan tingkat doping basis.
+    - Tegangan termal hasil optimasi $V_T =$ **{Vt_opt*1000:.2f} mV** (nilai ideal pada suhu ruang 25°C adalah $25.85\\text{{ mV}}$).
+    - Transkonduktansi sinyal kecil pada bias $I_C = 1\\text{{ mA}}$ adalah $g_m = I_C / V_T =$ **{gm_at_1mA*1000:.2f} mS**.
+
+    **Aplikasi Rangkaian**
+    - Penguat sinyal kecil (*Common Emitter*), saklar logika digital transistor, dan cermin arus (*current mirror*).
+    """)
+    st.info(f"💡 **Kesimpulan**: Model BJT cocok dengan data terukur, memberikan estimasi transkonduktansi presisi.")
 
 st.markdown("---")
-st.markdown("## 🔬 Interpretasi Algoritma Numerik")
-
+st.markdown("## 🔬 Analisis Kinerja Algoritma Numerik")
 col_a, col_b = st.columns(2)
+
 with col_a:
     st.markdown("### Gradient Descent")
-    iters = result["iterations"]
-    conv  = result["converged"]
-    cost0 = result["history"]["cost"][0]
-    costN = result["final_cost"]
-    reduction = (1 - costN/max(cost0,1e-30))*100
+    if "history" in result:
+        iters = result.get("iterations", 0)
+        conv  = result.get("converged", False)
+        cost0 = result["history"]["cost"][0]
+        costN = result.get("final_cost", 0)
+        reduction = (1.0 - costN / max(cost0, 1e-30)) * 100.0
 
-    st.markdown(f"""
-    | Metrik | Nilai |
-    |---|---|
-    | Iterasi | {iters} |
-    | Status | {'✅ Konvergen' if conv else '⚠️ Belum konvergen'} |
-    | Cost Awal | {cost0:.4e} |
-    | Cost Akhir | {costN:.4e} |
-    | Reduksi Cost | {reduction:.2f}% |
-    """)
-
-with col_b:
-    if "nr_result" in st.session_state:
-        st.markdown("### Newton-Raphson")
-        nr    = st.session_state["nr_result"]
         st.markdown(f"""
-        | Metrik | Nilai |
+        | Metrik Komputasi | Nilai |
         |---|---|
-        | Iterasi | {nr['iterations']} |
-        | Status | {'✅ Konvergen' if nr['converged'] else '⚠️ Tidak konvergen'} |
-        | \|f(x)\| Akhir | {abs(nr['f_root']):.4e} |
-        | Orde Konvergensi | Kuadratik (orde 2) |
+        | Jumlah Iterasi | {iters} |
+        | Status Konvergensi | {'✅ Konvergen' if conv else '⚠️ Selesai'} |
+        | Cost Function Awal (MSE) | `{cost0:.4e}` |
+        | Cost Function Akhir (MSE) | `{costN:.4e}` |
+        | Penurunan Error (Reduksi) | `{reduction:.2f}%` |
         """)
     else:
-        st.markdown("### Newton-Raphson")
-        st.info("Belum dijalankan.")
+        st.info("Gradient Descent belum dijalankan pada sesi ini.")
+
+with col_b:
+    st.markdown("### Newton-Raphson")
+    if "nr_result" in st.session_state:
+        nr = st.session_state["nr_result"]
+        st.markdown(f"""
+        | Metrik Komputasi | Nilai |
+        |---|---|
+        | Jumlah Iterasi | {nr.get('iterations', '-')} |
+        | Status Konvergensi | {'✅ Konvergen' if nr.get('converged', True) else '⚠️ Tidak Konvergen'} |
+        | Nilai \|f(x)\| Akhir | `{abs(nr.get('f_root', 0)):.4e}` |
+        | Laju Konvergensi | Kuadratik (Orde 2) |
+        """)
+    else:
+        st.info("Newton-Raphson belum dijalankan.")

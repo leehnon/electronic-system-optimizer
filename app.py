@@ -2,6 +2,7 @@ import streamlit as st
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from modules.styles import inject_css
+from modules.data_generator import ensure_default_data
 
 st.set_page_config(
     page_title="ElectronicSystem Parameter Optimizer",
@@ -11,6 +12,7 @@ st.set_page_config(
 )
 
 inject_css()
+ensure_default_data()
 
 # ── Page Header ───────────────────────────────────────────────────────────────
 st.title("ElectronicSystem Parameter Optimizer")
@@ -24,7 +26,7 @@ st.divider()
 # ── Stat Row ──────────────────────────────────────────────────────────────────
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Metode Numerik",    "GD + NR")
-c2.metric("Studi Kasus",       "4 Rangkaian")
+c2.metric("Studi Kasus",       "7 Rangkaian")
 c3.metric("Metrik Validasi",   "MSE · RMSE · R²")
 c4.metric("Format Output",     "TXT · CSV")
 
@@ -39,10 +41,10 @@ with col_l:
     """)
 
     rows = [
-        ("🔧", "Karakterisasi Komponen",    "Estimasi nilai R, L, C, A₀, f_c dari data terukur"),
-        ("📐", "Fitting Kurva",             "Cocokkan model matematis dengan data eksperimen"),
-        ("🔁", "Analisis Frekuensi",        "Temukan frekuensi resonansi RLC dan bandwidth amplifier"),
-        ("🔴", "Titik Operasi Nonlinear",   "Solusi numerik rangkaian dioda dan transistor"),
+        ("🔧", "Karakterisasi Komponen",    "Estimasi nilai R, L, C, A₀, f_c, I_s dari data terukur"),
+        ("📐", "Fitting Kurva & Transien",  "Cocokkan model matematis charging/discharging RC & filter"),
+        ("🔁", "Analisis Respon Frekuensi", "Temukan frekuensi resonansi RLC, bandwidth, dan Q-factor"),
+        ("🔴", "Titik Operasi Nonlinear",   "Solusi numerik rangkaian semikonduktor dioda dan transistor BJT"),
     ]
     for icon, title, desc in rows:
         st.markdown(f"""
@@ -95,19 +97,42 @@ for i, (num, title, desc) in enumerate(steps):
 
 st.divider()
 
-# ── Rangkaian yang Didukung ────────────────────────────────────────────────────
-st.markdown("## Rangkaian yang Didukung")
+# ── Rangkaian yang Didukung (7 Rangkaian) ──────────────────────────────────────
+st.markdown("## 7 Rangkaian Elektronika yang Didukung")
 
-rc_col, rlc_col, amp_col, diode_col = st.columns(4, gap="small")
-
-circuits = [
-    (rc_col,    "#0969da", "RC",        "Charging",     "Parameter: R, C, τ",         "V(t) = Vᵢₙ·(1−e⁻ᵗ/τ)"),
-    (rlc_col,   "#1a7f37", "RLC",       "Impedansi",    "Parameter: R, L, C, f_r",    "|Z(f)| vs frekuensi"),
-    (amp_col,   "#7d4e00", "Amplifier", "Single-Pole",  "Parameter: A₀, f_cutoff",    "G(f) = A₀/√(1+(f/fc)²)"),
-    (diode_col, "#82071e", "Dioda",     "Karakteristik","Parameter: V_D, I_D",         "Model Shockley"),
+row1_c1, row1_c2, row1_c3, row1_c4 = st.columns(4, gap="small")
+circuits_row1 = [
+    (row1_c1, "#0969da", "RC Charging",    "Transien Pengisian", "Parameter: R, C, τ",      "V(t) = Vᵢₙ·(1−e⁻ᵗ/τ)"),
+    (row1_c2, "#0284c7", "RC Discharge",   "Transien Pengosongan","Parameter: R, C, τ",      "V(t) = V₀·e⁻ᵗ/τ"),
+    (row1_c3, "#1a7f37", "RLC Seri",       "Respon Frekuensi",   "Parameter: R, L, C, f_r", "|Z(f)| vs Frekuensi"),
+    (row1_c4, "#7c3aed", "Band-Pass RLC",  "Filter Selektif",    "Parameter: f₀, BW, Q",    "H(f) = R / |Z(f)|"),
 ]
 
-for col, color, ctype, csub, params, formula in circuits:
+for col, color, ctype, csub, params, formula in circuits_row1:
+    with col:
+        st.markdown(f"""
+        <div style="background:white;border:1px solid #d0d7de;border-radius:8px;
+                    padding:16px;text-align:center;height:100%;margin-bottom:10px;">
+            <div style="width:36px;height:36px;border-radius:8px;background:{color}18;
+                        display:flex;align-items:center;justify-content:center;
+                        margin:0 auto 10px;border:1px solid {color}40;">
+                <span style="font-size:0.75rem;font-weight:700;color:{color};">{ctype[:3]}</span>
+            </div>
+            <p style="font-weight:700;color:#1c2128;font-size:0.88rem;margin:0 0 2px;">{ctype}</p>
+            <p style="color:#57606a;font-size:0.75rem;margin:0 0 10px;">{csub}</p>
+            <p style="font-size:0.72rem;color:#57606a;margin:0 0 4px;">{params}</p>
+            <code style="font-size:0.68rem;color:{color};">{formula}</code>
+        </div>
+        """, unsafe_allow_html=True)
+
+row2_c1, row2_c2, row2_c3 = st.columns(3, gap="small")
+circuits_row2 = [
+    (row2_c1, "#b45309", "Amplifier",      "Single-Pole Roll-off","Parameter: A₀, f_cutoff", "G(f) = A₀/√(1+(f/fc)²)"),
+    (row2_c2, "#dc2626", "Dioda PN",       "Karakteristik I-V",   "Parameter: V_D, I_D",     "I_D = Iₛ·(e^(V_D/V_T)−1)"),
+    (row2_c3, "#ea580c", "Transistor BJT", "Karakteristik Transfer","Parameter: Iₛ, V_T, gₘ", "I_C = Iₛ·(e^(V_BE/V_T)−1)"),
+]
+
+for col, color, ctype, csub, params, formula in circuits_row2:
     with col:
         st.markdown(f"""
         <div style="background:white;border:1px solid #d0d7de;border-radius:8px;
@@ -115,9 +140,9 @@ for col, color, ctype, csub, params, formula in circuits:
             <div style="width:36px;height:36px;border-radius:8px;background:{color}18;
                         display:flex;align-items:center;justify-content:center;
                         margin:0 auto 10px;border:1px solid {color}40;">
-                <span style="font-size:0.75rem;font-weight:700;color:{color};">{ctype}</span>
+                <span style="font-size:0.75rem;font-weight:700;color:{color};">{ctype[:3]}</span>
             </div>
-            <p style="font-weight:700;color:#1c2128;font-size:0.9rem;margin:0 0 2px;">{ctype}</p>
+            <p style="font-weight:700;color:#1c2128;font-size:0.88rem;margin:0 0 2px;">{ctype}</p>
             <p style="color:#57606a;font-size:0.75rem;margin:0 0 10px;">{csub}</p>
             <p style="font-size:0.72rem;color:#57606a;margin:0 0 4px;">{params}</p>
             <code style="font-size:0.68rem;color:{color};">{formula}</code>
