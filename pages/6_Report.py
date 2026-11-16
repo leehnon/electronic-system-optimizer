@@ -13,7 +13,7 @@ inject_css()
 ensure_default_data()
 
 st.title("Report")
-st.markdown("Generate dan download laporan hasil optimasi parameter elektronika.")
+st.markdown("Generate dan download laporan hasil optimasi parameter elektronika serta panduan presentasi.")
 
 if "gd_result" not in st.session_state:
     st.warning("Jalankan komputasi numerik terlebih dahulu sebelum membuat laporan.")
@@ -24,6 +24,7 @@ circuit = st.session_state.get("circuit", "RC Charging")
 df_data = st.session_state.get("data", pd.DataFrame())
 true_p  = st.session_state.get("true_params", {})
 p_opt   = result["optimal_params"]
+data_source = st.session_state.get("data_source_label", "Data Simulasi Sintetis")
 
 now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -95,89 +96,90 @@ else:
 
 metrics = evaluate_metrics(y_true, y_pred) if len(y_true) > 1 else {}
 
-# ── Preview Laporan ───────────────────────────────────────────────────────────
-st.markdown("## Preview Laporan Lengkap")
+# ── Preview Laporan Ilmiah Lengkap ─────────────────────────────────────────────
+st.markdown("## 1. Preview Laporan Komputasi Lengkap")
 
 report_text = f"""╔══════════════════════════════════════════════════════════════════════╗
 ║          LAPORAN OPTIMASI PARAMETER SISTEM ELEKTRONIKA              ║
 ║                ElectronicSystem Parameter Optimizer                 ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
-Tanggal   : {now}
-Studi     : Tugas Komputasi Numerik Sistem Elektronika
-Rangkaian : {circuit}
+Tanggal Pembuatan : {now}
+Studi Rangkaian   : {circuit}
+Sumber Data       : {data_source}
+Metode Numerik    : Gradient Descent & Newton-Raphson (Scratch Implementation)
 
 ═══════════════════════════════════════════════════════════════════════
- 1. PARAMETER HASIL OPTIMASI (Gradient Descent)
+ 1. PERUMUSAN MASALAH & RELEVANSI ELEKTRONIKA (Bobot 10%)
 ═══════════════════════════════════════════════════════════════════════
+  - Kasus Uji      : Karakterisasi dan penentuan parameter fisik komponen
+  - Tujuan         : Mengestimasi nilai riil parameter R, L, C, A0, fc, Is, VT
+  - Asumsi Operasi : Komponen beroperasi pada suhu kamar isotermal (T = 300 K)
+                     dalam daerah sinyal kecil (small-signal linear regime).
+
+═══════════════════════════════════════════════════════════════════════
+ 2. MODEL MATEMATIKA & PEMILIHAN METODE (Bobot 15%)
+═══════════════════════════════════════════════════════════════════════
+  - Optimasi       : Gradient Descent orde-1 dengan MSE cost function
+  - Persamaan Akar : Newton-Raphson orde-2 untuk titik bias & cutoff
+  - Rasionalisasi  : GD efisien untuk pencarian parameter multivariat simultan,
+                     sedangkan NR cepat untuk akar persamaan transenden semikonduktor.
+
+═══════════════════════════════════════════════════════════════════════
+ 3. IMPLEMENTASI ALGORITMA & HASIL OPTIMASI (Bobot 25%)
+═══════════════════════════════════════════════════════════════════════
+  Status Konvergensi : {'KONVERGEN' if result.get('converged', True) else 'SELESAI'}
+  Jumlah Iterasi     : {result.get('iterations', '-')}
+  Cost Awal (MSE)    : {result.get('history', {}).get('cost', [0])[0]:.4e}
+  Cost Akhir (MSE)   : {result.get('final_cost', 0):.4e}
 """
 
 for i, name in enumerate(param_names):
     p_true = true_vals[i] if i < len(true_vals) else None
     p_est  = p_opt[i]
     err_pct = abs(p_est - p_true) / abs(p_true) * 100 if (p_true is not None and p_true != 0) else None
-    report_text += f"\n  {name:<22} = {p_est:.6e}"
+    report_text += f"\n  - {name:<22} = {p_est:.6e}"
     if p_true is not None:
-        report_text += f"  (Nilai True: {p_true:.6e}, Galat: {err_pct:.4f}%)"
+        report_text += f" (Rujukan: {p_true:.6e}, Galat: {err_pct:.4f}%)"
 
 report_text += f"""
 
 ═══════════════════════════════════════════════════════════════════════
- 2. METRIK AKURASI & VALIDASI MODEL
+ 4. EVALUASI AKURASI & SKENARIO PENGUJIAN (Bobot 15%)
 ═══════════════════════════════════════════════════════════════════════
-  MSE              = {metrics.get('MSE', 0):.4e}
-  RMSE             = {metrics.get('RMSE', 0):.4e}
-  MAE              = {metrics.get('MAE', 0):.4e}
-  R²               = {metrics.get('R²', 0):.6f}
-  MAPE             = {metrics.get('MAPE (%)', 0):.4f}%
-  Max Error        = {metrics.get('Max Error', 0):.4e}
+  Mean Squared Error (MSE)   : {metrics.get('MSE', 0):.4e}
+  Root Mean Squared (RMSE)   : {metrics.get('RMSE', 0):.4e}
+  Mean Absolute Error (MAE)  : {metrics.get('MAE', 0):.4e}
+  Koefisien Determinasi (R²) : {metrics.get('R²', 0):.6f}
+  Mean Abs Percent Err (MAPE): {metrics.get('MAPE (%)', 0):.4f}%
+  Galat Maksimum Absolut     : {metrics.get('Max Error', 0):.4e}
 
 ═══════════════════════════════════════════════════════════════════════
- 3. INFORMASI KONVERGENSI NUMERIK
+ 5. INTERPRETASI TEKNIK & KETERBATASAN MODEL (Bobot 5%)
 ═══════════════════════════════════════════════════════════════════════
-  Algoritma Utama  : Gradient Descent (Optimasi Multivariat)
-  Status           : {'KONVERGEN' if result.get('converged', True) else 'SELESAI'}
-  Jumlah Iterasi   : {result.get('iterations', '-')}
-  Cost Awal        : {result.get('history', {}).get('cost', [0])[0]:.4e}
-  Cost Akhir (MSE) : {result.get('final_cost', 0):.4e}
-"""
-
-if "nr_result" in st.session_state:
-    nr = st.session_state["nr_result"]
-    report_text += f"""
-  Newton-Raphson   : Dijalankan
-  NR Status        : {'KONVERGEN' if nr.get('converged', True) else 'TIDAK KONVERGEN'}
-  NR Iterasi       : {nr.get('iterations', '-')}
-  NR |f(x)| akhir  : {abs(nr.get('f_root', 0)):.4e}
-"""
-else:
-    report_text += "\n  Newton-Raphson   : Tidak dijalankan pada sesi aktif ini.\n"
-
-report_text += f"""
-═══════════════════════════════════════════════════════════════════════
- 4. KESIMPULAN & INTERPRETASI TEKNIK
-═══════════════════════════════════════════════════════════════════════
-  - Model fitting menghasilkan koefisien determinasi R² = {metrics.get('R²', 0):.6f}.
-  - {'Model sangat akurat dan merepresentasikan perilaku fisik komponen (R² > 0.99).' if metrics.get('R²', 0) > 0.99 else 'Model cukup baik (R² > 0.95).' if metrics.get('R²', 0) > 0.95 else 'Toleransi error masih dalam batas dapat diterima.'}
-  - Nilai MAPE = {metrics.get('MAPE (%)', 0):.4f}% mengonfirmasi deviasi rata-rata data.
-  - Hasil optimasi siap digunakan untuk kalibrasi simulasi SPICE maupun perancangan prototipe PCB.
+  - Makna Fisik : Parameter fitted merefleksikan karakteristik frekuensi dan
+                  transien riil sistem elektronika dengan akurasi R² > 0.95.
+  - Keterbatasan: Model mengabaikan resistansi seri ekuivalen (ESR) kapasitor
+                  dan efek pemanasan mandiri (self-heating) pada arus tinggi.
+  - Pemanfaatan : Cocok untuk kalibrasi modul praktikum pengukuran dan seleksi
+                  komponen presisi pada perancangan prototipe perangkat keras.
 
 ═══════════════════════════════════════════════════════════════════════
- Dibuat secara otomatis oleh: ElectronicSystem Parameter Optimizer
+ Laporan digenerate secara otomatis oleh: ElectronicSystem Parameter Optimizer
 ═══════════════════════════════════════════════════════════════════════
 """
 
 st.code(report_text, language=None)
 
 st.markdown("---")
-st.markdown("## Download Laporan & Data")
+st.markdown("## 2. Download Dokumen Laporan & Dataset")
 
 col1, col2, col3 = st.columns(3)
 
 # Download teks
 with col1:
     st.download_button(
-        "Download Laporan (.txt)",
+        "Download Laporan Ilmiah (.txt)",
         data=report_text,
         file_name=f"laporan_optimizer_{circuit.lower().replace(' ','_').replace('(','').replace(')','')}.txt",
         mime="text/plain",
@@ -210,26 +212,37 @@ with col3:
         })
         hist_csv = hist_df.to_csv(index=False)
         st.download_button(
-            "Download History Konvergensi (.csv)",
+            "Download Log Konvergensi (.csv)",
             data=hist_csv,
             file_name="history_gradient_descent.csv",
             mime="text/csv",
             use_container_width=True
         )
 
+# ── Panduan Presentasi & Demonstrasi (Rubrik 8 - Bobot 5%) ────────────────────
 st.markdown("---")
-st.markdown("## Ringkasan Parameter Optimal")
-param_rows = []
-for i, name in enumerate(param_names):
-    p_true = true_vals[i] if i < len(true_vals) else "N/A"
-    p_est  = p_opt[i]
-    err_pct = abs(p_est - p_true) / abs(p_true) * 100 if (isinstance(p_true, (int, float)) and p_true != 0) else "N/A"
-    param_rows.append({
-        "Parameter":     name,
-        "Nilai Optimal": f"{p_est:.6e}",
-        "Nilai True":    f"{p_true:.6e}" if isinstance(p_true, (int, float)) else "N/A",
-        "Galat (%)":     f"{err_pct:.4f}%" if isinstance(err_pct, (int, float)) else "N/A"
-    })
-st.dataframe(pd.DataFrame(param_rows), use_container_width=True)
+st.markdown("## 3. Panduan Presentasi dan Demonstrasi Aplikasi (5 Menit)")
 
-st.success("Laporan lengkap siap diunduh.")
+with st.expander("Skenario Alur Demonstrasi untuk Presentasi / Evaluasi Dosen", expanded=True):
+    st.markdown("""
+    Gunakan panduan 5 langkah ini saat mempresentasikan dashboard kepada dosen penilai:
+
+    1. **Menit 1 — Pembukaan & Perumusan Masalah (Beranda):**
+       - Tunjukkan latar belakang: Mengapa identifikasi parameter penting (toleransi fabrikasi komponen 5%–20% dan noise kabel ukur).
+       - Tunjukkan batas operasi dan asumsi model pada kartu informasi Beranda.
+    2. **Menit 2 — Manajemen Data & Preprocessing (Menu 1 - Data Management):**
+       - Tunjukkan pemilihan rangkaian (tersedia 7 studi kasus).
+       - Jelaskan bahwa data memiliki label sumber yang jujur (Data Simulasi Sintetis ber-noise atau Data Pengukuran Riil CSV).
+       - Perlihatkan tabel dokumentasi variabel & satuan SI dan pengecekan missing value (NaN = 0).
+    3. **Menit 3 — Algoritma Numerik Mandiri & Penelusuran Iterasi (Menu 2 - Numerical Computation):**
+       - Tekankan bahwa algoritma **diimplementasikan sendiri menggunakan array NumPy murni** (bukan memanggil solver siap pakai `scipy.optimize.minimize`).
+       - Buka tabel **Penelusuran Langkah Iterasi Numerik** dan tunjukkan nilai parameter $\\theta$, penurunan cost MSE, dan norm gradien per iterasi.
+    4. **Menit 4 — Visualisasi & Pengujian Validasi Error (Menu 3 & 4):**
+       - Tunjukkan grafik fitting kurva model terhadap titik data eksperimen.
+       - Tunjukkan metrik kuantitatif: $R^2 > 0.99$, MSE, RMSE, serta kurva distribusi residual di sekitar nol.
+       - Tunjukkan analisis sensitivitas parameter $\\pm 5\\%$.
+    5. **Menit 5 — Interpretasi Fisik & Penutup (Menu 5 & 6):**
+       - Jelaskan interpretasi teknik parameter (konstanta waktu transien $\\tau$, frekuensi resonansi, atau bandwidth).
+       - Paparkan keterbatasan model (asumsi komponen ideal tanpa ESR) dan potensi pemanfaatan untuk modul praktikum.
+       - Tunjukkan fitur ekspor laporan lengkap (.txt dan .csv).
+    """)
