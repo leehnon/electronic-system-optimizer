@@ -8,7 +8,7 @@ from modules.evaluation import evaluate_metrics, parameter_sensitivity, converge
 from modules.visualization import plot_residuals, plot_sensitivity
 from modules.data_generator import ensure_default_data
 
-st.set_page_config(page_title="Evaluation", page_icon="✅", layout="wide")
+st.set_page_config(page_title="Evaluation", layout="wide")
 inject_css()
 ensure_default_data()
 
@@ -16,7 +16,7 @@ st.title("Evaluation")
 st.markdown("Evaluasi akurasi model dan perbandingan hasil numerik vs referensi.")
 
 if "gd_result" not in st.session_state:
-    st.warning("⚠️ Belum ada hasil komputasi. Jalankan Gradient Descent terlebih dahulu.")
+    st.warning("Belum ada hasil komputasi. Jalankan Gradient Descent terlebih dahulu.")
     st.stop()
 
 result  = st.session_state["gd_result"]
@@ -93,28 +93,28 @@ else:
 metrics = evaluate_metrics(y_true, y_pred)
 
 # ── Metrik Utama ──────────────────────────────────────────────────────────────
-st.markdown("## 📊 Metrik Akurasi")
+st.markdown("## Metrik Akurasi")
 col1, col2, col3, col4, col5 = st.columns(5)
 col1.metric("MSE",           f"{metrics['MSE']:.4e}")
 col2.metric("RMSE",          f"{metrics['RMSE']:.4e}")
 col3.metric("MAE",           f"{metrics['MAE']:.4e}")
-col4.metric("R² (Koefisien Determinasi)", f"{metrics['R²']:.6f}")
+col4.metric("R² (Determinasi)", f"{metrics['R²']:.6f}")
 col5.metric("MAPE",          f"{metrics['MAPE (%)']:.3f}%")
 
 r2 = metrics["R²"]
 if r2 > 0.99:
-    st.success(f"🎯 Model sangat akurat! R² = {r2:.6f} (>0.99 — fitting sangat presisi)")
+    st.success(f"Model sangat akurat: R² = {r2:.6f} (>0.99 — fitting sangat presisi)")
 elif r2 > 0.95:
-    st.info(f"✅ Model baik. R² = {r2:.6f} (>0.95)")
+    st.info(f"Model baik: R² = {r2:.6f} (>0.95)")
 elif r2 > 0.90:
-    st.warning(f"⚠️ Model cukup. R² = {r2:.6f} (>0.90 — pertimbangkan tuning learning rate)")
+    st.warning(f"Model cukup: R² = {r2:.6f} (>0.90 — pertimbangkan tuning learning rate)")
 else:
-    st.error(f"❌ Model kurang optimal. R² = {r2:.6f} — periksa data atau tebakan awal")
+    st.error(f"Model kurang optimal: R² = {r2:.6f} — periksa data atau tebakan awal")
 
 st.markdown("---")
 
 # ── Perbandingan Parameter ────────────────────────────────────────────────────
-st.markdown("## 🔍 Perbandingan Parameter: Optimal vs True")
+st.markdown("## Perbandingan Parameter: Optimal vs True")
 rows = []
 for i, name in enumerate(param_names):
     p_true = true_vals[i] if i < len(true_vals) else None
@@ -124,10 +124,10 @@ for i, name in enumerate(param_names):
         "Parameter":     name,
         "Nilai True":    f"{p_true:.6e}" if p_true is not None else "N/A",
         "Nilai Optimal": f"{p_est:.6e}",
-        "Error (%)":     f"{err_pct:.4f}%" if err_pct is not None else "N/A",
-        "Status":        "✅ Sangat Baik (<1%)" if (err_pct and err_pct < 1) else
-                         "⚠️ Toleransi (<5%)" if (err_pct and err_pct < 5) else
-                         "❌ Perlu tuning" if err_pct else "—"
+        "Galat (%)":     f"{err_pct:.4f}%" if err_pct is not None else "N/A",
+        "Status":        "Sangat Baik (<1%)" if (err_pct and err_pct < 1) else
+                         "Toleransi (<5%)" if (err_pct and err_pct < 5) else
+                         "Perlu Tuning" if err_pct else "-"
     })
 
 st.dataframe(pd.DataFrame(rows), use_container_width=True)
@@ -135,7 +135,7 @@ st.dataframe(pd.DataFrame(rows), use_container_width=True)
 st.markdown("---")
 
 # ── Konvergensi ───────────────────────────────────────────────────────────────
-st.markdown("## 🔄 Analisis Konvergensi")
+st.markdown("## Analisis Konvergensi")
 col_a, col_b, col_c = st.columns(3)
 col_a.metric("Iterasi Total",     result["iterations"])
 col_b.metric("Cost Awal",         f"{result['history']['cost'][0]:.4e}")
@@ -144,14 +144,14 @@ col_c.metric("Cost Akhir",        f"{result['final_cost']:.4e}")
 cr = convergence_rate(result["history"]["cost"])
 if cr:
     if cr < 1.0:
-        st.success(f"✅ Laju konvergensi rata-rata: **{cr:.4f}** (< 1 → proses stabil)")
+        st.success(f"Laju konvergensi rata-rata: {cr:.4f} (< 1 — proses stabil)")
     else:
-        st.error(f"❌ Laju konvergensi: **{cr:.4f}** (≥ 1 → kurangi learning rate)")
+        st.error(f"Laju konvergensi: {cr:.4f} (≥ 1 — kurangi learning rate)")
 
 st.markdown("---")
 
 # ── Residual Analysis ─────────────────────────────────────────────────────────
-st.markdown("## 📉 Analisis Residual")
+st.markdown("## Analisis Residual")
 residuals = metrics["Residuals"]
 st.markdown(f"""
 | Statistik Residual | Nilai |
@@ -165,7 +165,7 @@ st.plotly_chart(plot_residuals(residuals), use_container_width=True)
 
 # ── Sensitivitas ──────────────────────────────────────────────────────────────
 st.markdown("---")
-st.markdown("## 🎛️ Sensitivitas Parameter (±5%)")
+st.markdown("## Sensitivitas Parameter (±5%)")
 
 cost_f = None
 if circuit == "RC Charging":

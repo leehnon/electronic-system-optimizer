@@ -12,31 +12,30 @@ from modules.visualization import (plot_rc_charging, plot_rc_discharging,
 from modules.evaluation import evaluate_metrics, parameter_sensitivity, convergence_rate
 from modules.data_generator import ensure_default_data
 
-st.set_page_config(page_title="Visualization", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Visualization", layout="wide")
 inject_css()
 ensure_default_data()
 
 st.title("Visualization")
-st.markdown("Grafik interaktif hasil optimasi parameter elektronika.")
+st.markdown("Visualisasi grafik interaktif hasil optimasi parameter elektronika.")
 
 has_gd = "gd_result" in st.session_state
 has_nr = "nr_result" in st.session_state
 has_data = "data" in st.session_state
 
 if not has_data:
-    st.warning("⚠️ Belum ada data! Silakan ke menu **Data Management** terlebih dahulu.")
+    st.warning("Belum ada data. Silakan ke menu Data Management terlebih dahulu.")
     st.stop()
 
 circuit = st.session_state.get("circuit", "RC Charging")
 df      = st.session_state["data"]
 true_p  = st.session_state.get("true_params", {})
 
-tab1, tab2, tab3, tab4 = st.tabs(["📊 Data & Fitting", "🔄 Konvergensi",
-                                   "📉 Residual", "🎛️ Sensitivitas"])
+tab1, tab2, tab3, tab4 = st.tabs(["Data & Fitting", "Konvergensi", "Residual", "Sensitivitas Parameter"])
 
 # ── Tab 1: Data & Fitting ─────────────────────────────────────────────────────
 with tab1:
-    st.markdown("### 📊 Perbandingan Data vs Model Optimal")
+    st.markdown("### Perbandingan Data vs Model Optimal")
     if has_gd:
         result = st.session_state["gd_result"]
         p_opt  = result["optimal_params"]
@@ -145,11 +144,11 @@ with tab1:
         elif circuit == "Transistor BJT":
             st.plotly_chart(plot_bjt_ic_vbe(df["V_be_V"], df["I_c_A"]), use_container_width=True)
         else:
-            st.info("💡 Jalankan Gradient Descent terlebih dahulu di menu **Numerical Computation**.")
+            st.info("Jalankan Gradient Descent terlebih dahulu di menu Numerical Computation.")
 
 # ── Tab 2: Konvergensi ────────────────────────────────────────────────────────
 with tab2:
-    st.markdown("### 🔄 Grafik Konvergensi Algoritma")
+    st.markdown("### Grafik Konvergensi Algoritma")
     col_a, col_b = st.columns(2)
 
     with col_a:
@@ -173,7 +172,7 @@ with tab2:
 
 # ── Tab 3: Residual ───────────────────────────────────────────────────────────
 with tab3:
-    st.markdown("### 📉 Analisis Residual")
+    st.markdown("### Analisis Residual")
     if "metrics" in st.session_state:
         metrics = st.session_state["metrics"]
         residuals = metrics["Residuals"]
@@ -187,11 +186,11 @@ with tab3:
 
         st.plotly_chart(plot_residuals(residuals), use_container_width=True)
     else:
-        st.info("💡 Jalankan komputasi atau buka tab 'Data & Fitting' terlebih dahulu.")
+        st.info("Jalankan komputasi atau buka tab Data & Fitting terlebih dahulu.")
 
 # ── Tab 4: Sensitivitas ───────────────────────────────────────────────────────
 with tab4:
-    st.markdown("### 🎛️ Analisis Sensitivitas Parameter")
+    st.markdown("### Analisis Sensitivitas Parameter")
     if has_gd:
         result = st.session_state["gd_result"]
         p_opt  = result["optimal_params"]
@@ -250,4 +249,4 @@ with tab4:
                 col: "{:.4e}" for col in sens_df.columns if col != "Parameter"
             }), use_container_width=True)
     else:
-        st.info("💡 Jalankan Gradient Descent terlebih dahulu.")
+        st.info("Jalankan Gradient Descent terlebih dahulu.")

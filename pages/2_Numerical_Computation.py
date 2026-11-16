@@ -19,33 +19,33 @@ from modules.visualization import (plot_convergence, plot_newton_raphson_converg
                                     plot_amplifier_gain, plot_bjt_ic_vbe)
 from modules.data_generator import ensure_default_data
 
-st.set_page_config(page_title="Numerical Computation", page_icon="🔢", layout="wide")
+st.set_page_config(page_title="Numerical Computation", layout="wide")
 inject_css()
 ensure_default_data()
 
 st.title("Numerical Computation")
 
 if "data" not in st.session_state:
-    st.warning("⚠️ Belum ada data! Silakan generate atau upload data di menu **Data Management** dulu.")
+    st.warning("Belum ada data. Silakan generate atau upload data di menu Data Management terlebih dahulu.")
     st.stop()
 
 circuit = st.session_state.get("circuit", "RC Charging")
 df      = st.session_state["data"]
 true_p  = st.session_state.get("true_params", {})
 
-st.info(f"📌 Rangkaian aktif: **{circuit}**")
+st.info(f"Rangkaian aktif: {circuit}")
 st.markdown("---")
 
 # ── Tab algoritma ──────────────────────────────────────────────────────────────
-tab_gd, tab_nr = st.tabs(["🔁 Gradient Descent", "📐 Newton-Raphson"])
+tab_gd, tab_nr = st.tabs(["Gradient Descent", "Newton-Raphson"])
 
 # ══════════════════════════════════════════════════════════════════════════════
 # GRADIENT DESCENT
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_gd:
-    st.markdown("### 🔁 Gradient Descent — Optimasi Parameter")
+    st.markdown("### Gradient Descent — Optimasi Parameter")
 
-    with st.expander("📖 Teori Gradient Descent", expanded=False):
+    with st.expander("Teori Gradient Descent", expanded=False):
         st.markdown(r"""
         **Gradient Descent** adalah algoritma iteratif untuk mencari minimum fungsi biaya:
 
@@ -68,10 +68,10 @@ with tab_gd:
         C_init = c2.number_input("C awal (µF)", 0.01, 1000.0,
                                   float(true_p.get("C", 1e-6) * 1e6 * 0.75)) * 1e-6
         c3, c4 = st.columns(2)
-        lr       = c3.number_input("Learning Rate (α)", 1e-12, 1.0, 1e-6, format="%.2e")
+        lr       = c3.number_input("Learning Rate (alpha)", 1e-12, 1.0, 1e-6, format="%.2e")
         max_iter = c4.number_input("Maks. Iterasi", 10, 5000, 500)
 
-        if st.button("▶ Jalankan Gradient Descent (RC Charging)", type="primary"):
+        if st.button("Jalankan Gradient Descent (RC Charging)", type="primary"):
             t   = df["time_s"].values
             V   = df["voltage_V"].values
             V_in = float(true_p.get("V_in", 5.0))
@@ -90,12 +90,12 @@ with tab_gd:
             st.session_state["gd_result"]  = result
             st.session_state["gd_circuit"] = circuit
 
-            st.success(f"{'✅ Konvergen' if result['converged'] else '⚠️ Selesai'} dalam **{result['iterations']}** iterasi")
+            st.success(f"{'Konvergen' if result['converged'] else 'Selesai'} dalam {result['iterations']} iterasi")
 
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("R Optimal", f"{R_opt:.2f} Ω")
             col2.metric("C Optimal", f"{C_opt*1e6:.4f} µF")
-            col3.metric("τ Optimal", f"{tau_opt*1000:.4f} ms")
+            col3.metric("tau Optimal", f"{tau_opt*1000:.4f} ms")
             col4.metric("Final MSE", f"{result['final_cost']:.4e}")
 
             V_fitted = V_in * (1 - np.exp(-t / max(tau_opt, 1e-15)))
@@ -111,10 +111,10 @@ with tab_gd:
         C_init = c2.number_input("C awal (µF)", 0.01, 1000.0,
                                   float(true_p.get("C", 1e-6) * 1e6 * 0.75)) * 1e-6
         c3, c4 = st.columns(2)
-        lr       = c3.number_input("Learning Rate (α)", 1e-12, 1.0, 1e-6, format="%.2e")
+        lr       = c3.number_input("Learning Rate (alpha)", 1e-12, 1.0, 1e-6, format="%.2e")
         max_iter = c4.number_input("Maks. Iterasi", 10, 5000, 500)
 
-        if st.button("▶ Jalankan Gradient Descent (RC Discharging)", type="primary"):
+        if st.button("Jalankan Gradient Descent (RC Discharging)", type="primary"):
             t  = df["time_s"].values
             V  = df["voltage_V"].values
             V0 = float(true_p.get("V0", 5.0))
@@ -133,11 +133,11 @@ with tab_gd:
             st.session_state["gd_result"]  = result
             st.session_state["gd_circuit"] = circuit
 
-            st.success(f"{'✅ Konvergen' if result['converged'] else '⚠️ Selesai'} dalam **{result['iterations']}** iterasi")
+            st.success(f"{'Konvergen' if result['converged'] else 'Selesai'} dalam {result['iterations']} iterasi")
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("R Optimal", f"{R_opt:.2f} Ω")
             col2.metric("C Optimal", f"{C_opt*1e6:.4f} µF")
-            col3.metric("τ Optimal", f"{tau_opt*1000:.4f} ms")
+            col3.metric("tau Optimal", f"{tau_opt*1000:.4f} ms")
             col4.metric("Final MSE", f"{result['final_cost']:.4e}")
 
             V_fitted = V0 * np.exp(-t / max(tau_opt, 1e-15))
@@ -151,12 +151,12 @@ with tab_gd:
         c1, c2, c3 = st.columns(3)
         R_init = c1.number_input("R awal (Ω)", 1.0, 1000.0, float(true_p.get("R", 10.0) * 1.2))
         L_init = c2.number_input("L awal (mH)", 0.1, 1000.0, float(true_p.get("L", 0.01) * 1e3 * 0.8)) * 1e-3
-        C_init = c3.number_input("C awal (µF)", 0.01, 100.0, float(true_p.get("C", 1e-6) * 1e6 * 1.3)) * 1e-6
+        C_init = c3.number_input("C awal (µF)", 0.01, 1000.0, float(true_p.get("C", 1e-6) * 1e6 * 1.3)) * 1e-6
         c4, c5 = st.columns(2)
-        lr       = c4.number_input("Learning Rate (α)", 1e-14, 1e-3, 1e-10, format="%.2e")
+        lr       = c4.number_input("Learning Rate (alpha)", 1e-14, 1e-3, 1e-10, format="%.2e")
         max_iter = c5.number_input("Maks. Iterasi", 10, 5000, 1000)
 
-        if st.button("▶ Jalankan Gradient Descent (RLC)", type="primary"):
+        if st.button("Jalankan Gradient Descent (RLC)", type="primary"):
             freqs = df["frequency_Hz"].values
             Z     = df["impedance_ohm"].values
 
@@ -173,12 +173,12 @@ with tab_gd:
             st.session_state["gd_result"]  = result
             st.session_state["gd_circuit"] = circuit
 
-            st.success(f"{'✅ Konvergen' if result['converged'] else '⚠️ Selesai'} dalam **{result['iterations']}** iterasi")
+            st.success(f"{'Konvergen' if result['converged'] else 'Selesai'} dalam {result['iterations']} iterasi")
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("R Optimal", f"{R_opt:.3f} Ω")
             col2.metric("L Optimal", f"{L_opt*1e3:.3f} mH")
             col3.metric("C Optimal", f"{C_opt*1e6:.4f} µF")
-            col4.metric("f_r Optimal", f"{f_r_opt:.2f} Hz")
+            col4.metric("fr Optimal", f"{f_r_opt:.2f} Hz")
 
             omega = 2 * np.pi * freqs
             Z_fitted = np.sqrt(R_opt**2 + (omega * L_opt - 1.0 / (omega * C_opt))**2)
@@ -193,10 +193,10 @@ with tab_gd:
         L_init = c2.number_input("L awal (mH)", 0.1, 1000.0, float(true_p.get("L", 0.01) * 1e3 * 0.85)) * 1e-3
         C_init = c3.number_input("C awal (µF)", 0.01, 100.0, float(true_p.get("C", 1e-6) * 1e6 * 1.15)) * 1e-6
         c4, c5 = st.columns(2)
-        lr       = c4.number_input("Learning Rate (α)", 1e-12, 1e-2, 1e-7, format="%.2e")
+        lr       = c4.number_input("Learning Rate (alpha)", 1e-12, 1e-2, 1e-7, format="%.2e")
         max_iter = c5.number_input("Maks. Iterasi", 10, 5000, 1000)
 
-        if st.button("▶ Jalankan Gradient Descent (Band-Pass Filter)", type="primary"):
+        if st.button("Jalankan Gradient Descent (Band-Pass Filter)", type="primary"):
             freqs = df["frequency_Hz"].values
             gain  = df["gain_linear"].values
 
@@ -215,10 +215,10 @@ with tab_gd:
             st.session_state["gd_result"]  = result
             st.session_state["gd_circuit"] = circuit
 
-            st.success(f"{'✅ Konvergen' if result['converged'] else '⚠️ Selesai'} dalam **{result['iterations']}** iterasi")
+            st.success(f"{'Konvergen' if result['converged'] else 'Selesai'} dalam {result['iterations']} iterasi")
             col1, col2, col3, col4 = st.columns(4)
             col1.metric("R Optimal", f"{R_opt:.2f} Ω")
-            col2.metric("f₀ Optimal", f"{f0_opt:.2f} Hz")
+            col2.metric("f0 Optimal", f"{f0_opt:.2f} Hz")
             col3.metric("Q Factor", f"{Q_opt:.3f}")
             col4.metric("Bandwidth", f"{BW_opt:.2f} Hz")
 
@@ -236,10 +236,10 @@ with tab_gd:
         A0_init = c1.number_input("A0 awal", 1.0, 10000.0, float(true_p.get("A0", 100.0) * 0.8))
         fc_init = c2.number_input("f_c awal (Hz)", 10.0, 1e5, float(true_p.get("f_cutoff", 1000.0) * 1.3))
         c3, c4  = st.columns(2)
-        lr       = c3.number_input("Learning Rate (α)", 1e-10, 10.0, 0.01, format="%.4f")
+        lr       = c3.number_input("Learning Rate (alpha)", 1e-10, 10.0, 0.01, format="%.4f")
         max_iter = c4.number_input("Maks. Iterasi", 10, 5000, 1000)
 
-        if st.button("▶ Jalankan Gradient Descent (Amplifier)", type="primary"):
+        if st.button("Jalankan Gradient Descent (Amplifier)", type="primary"):
             freqs = df["frequency_Hz"].values
             G     = df["gain"].values
 
@@ -254,10 +254,10 @@ with tab_gd:
             st.session_state["gd_result"]  = result
             st.session_state["gd_circuit"] = "Amplifier (Single-Pole)"
 
-            st.success(f"{'✅ Konvergen' if result['converged'] else '⚠️ Selesai'} dalam **{result['iterations']}** iterasi")
+            st.success(f"{'Konvergen' if result['converged'] else 'Selesai'} dalam {result['iterations']} iterasi")
             col1, col2, col3 = st.columns(3)
             col1.metric("A0 Optimal", f"{A0_opt:.3f}")
-            col2.metric("f_c Optimal", f"{fc_opt:.2f} Hz")
+            col2.metric("fc Optimal", f"{fc_opt:.2f} Hz")
             col3.metric("Final MSE", f"{result['final_cost']:.4e}")
 
             G_fitted = A0_opt / np.sqrt(1 + (freqs / max(fc_opt, 1e-3))**2)
@@ -266,7 +266,7 @@ with tab_gd:
 
     # 6. Dioda
     elif circuit == "Dioda":
-        st.info("💡 Karakteristik titik kerja Dioda sangat optimal diselesaikan menggunakan tab **Newton-Raphson**.")
+        st.info("Karakteristik titik kerja Dioda diselesaikan menggunakan tab Newton-Raphson.")
 
     # 7. Transistor BJT
     elif circuit == "Transistor BJT":
@@ -275,10 +275,10 @@ with tab_gd:
         Is_init = c1.number_input("Is awal (A)", 1e-18, 1e-8, float(true_p.get("I_s", 1e-14) * 2.0), format="%.2e")
         Vt_init = c2.number_input("Vt awal (V)", 0.01, 0.06, float(true_p.get("V_T", 0.026) * 1.1), format="%.4f")
         c3, c4 = st.columns(2)
-        lr       = c3.number_input("Learning Rate (α)", 1e-12, 1e-1, 1e-4, format="%.2e")
+        lr       = c3.number_input("Learning Rate (alpha)", 1e-12, 1e-1, 1e-4, format="%.2e")
         max_iter = c4.number_input("Maks. Iterasi", 10, 5000, 800)
 
-        if st.button("▶ Jalankan Gradient Descent (BJT)", type="primary"):
+        if st.button("Jalankan Gradient Descent (BJT)", type="primary"):
             vbe = df["V_be_V"].values
             ic  = df["I_c_A"].values
 
@@ -293,7 +293,7 @@ with tab_gd:
             st.session_state["gd_result"]  = result
             st.session_state["gd_circuit"] = circuit
 
-            st.success(f"{'✅ Konvergen' if result['converged'] else '⚠️ Selesai'} dalam **{result['iterations']}** iterasi")
+            st.success(f"{'Konvergen' if result['converged'] else 'Selesai'} dalam {result['iterations']} iterasi")
             col1, col2, col3 = st.columns(3)
             col1.metric("Is Optimal", f"{Is_opt:.3e} A")
             col2.metric("Vt Optimal", f"{Vt_opt*1000:.2f} mV")
@@ -308,9 +308,9 @@ with tab_gd:
 # NEWTON-RAPHSON
 # ══════════════════════════════════════════════════════════════════════════════
 with tab_nr:
-    st.markdown("### 📐 Newton-Raphson — Penyelesaian Persamaan Nonlinear")
+    st.markdown("### Newton-Raphson — Penyelesaian Persamaan Nonlinear")
 
-    with st.expander("📖 Teori Newton-Raphson", expanded=False):
+    with st.expander("Teori Newton-Raphson", expanded=False):
         st.markdown(r"""
         **Newton-Raphson** adalah metode iteratif untuk mencari akar persamaan nonlinear $f(x) = 0$:
 
@@ -341,14 +341,14 @@ with tab_nr:
         I_s = c3.number_input("Arus Saturasi I_s (A)", 1e-15, 1e-8, 1e-12, format="%.2e")
         V_T = c4.number_input("Tegangan Termal V_T (V)", 0.02, 0.04, 0.02585)
 
-        if st.button("▶ Jalankan Newton-Raphson (Dioda)", type="primary"):
+        if st.button("Jalankan Newton-Raphson (Dioda)", type="primary"):
             result = find_diode_operating_point(V_s, R, I_s, V_T)
             st.session_state["nr_result"] = result
 
-            st.success(f"{'✅ Konvergen' if result['converged'] else '⚠️ Selesai'} dalam **{result['iterations']}** iterasi")
+            st.success(f"{'Konvergen' if result['converged'] else 'Selesai'} dalam {result['iterations']} iterasi")
             col1, col2, col3, col4 = st.columns(4)
-            col1.metric("V_D (Tegangan Dioda)", f"{result['V_D']:.4f} V")
-            col2.metric("I_D (Arus Dioda)", f"{result['I_D']*1000:.4f} mA")
+            col1.metric("VD (Tegangan Dioda)", f"{result['V_D']:.4f} V")
+            col2.metric("ID (Arus Dioda)", f"{result['I_D']*1000:.4f} mA")
             col3.metric("|f(x)| Akhir", f"{abs(result['f_root']):.2e}")
             col4.metric("Iterasi", result["iterations"])
 
@@ -362,10 +362,10 @@ with tab_nr:
         Is_bjt    = c2.number_input("Arus Saturasi Is (A)", 1e-16, 1e-9, 1e-14, format="%.2e")
         Vt_bjt    = st.number_input("Tegangan Termal Vt (V)", 0.02, 0.04, 0.026)
 
-        if st.button("▶ Selesaikan Bias BJT (Newton-Raphson)", type="primary"):
+        if st.button("Selesaikan Bias BJT (Newton-Raphson)", type="primary"):
             res = find_bjt_vbe_bias(target_ic, Is_bjt, Vt_bjt)
             st.session_state["nr_result"] = res
-            st.success(f"✅ Konvergen! V_BE yang dibutuhkan = **{res['V_BE']:.4f} V**")
+            st.success(f"Konvergen: V_BE yang dibutuhkan = {res['V_BE']:.4f} V")
             col1, col2, col3 = st.columns(3)
             col1.metric("V_BE Diperlukan", f"{res['V_BE']:.4f} V")
             col2.metric("Target I_C", f"{target_ic*1000:.2f} mA")
@@ -381,10 +381,10 @@ with tab_nr:
         C_bp = c3.number_input("Kapasitor C (µF)", 0.01, 100.0, 1.0) * 1e-6
         side = st.radio("Pilih Sisi Cutoff:", ["low (f_c1)", "high (f_c2)"], horizontal=True)
 
-        if st.button("▶ Cari Frekuensi Cutoff -3dB", type="primary"):
+        if st.button("Cari Frekuensi Cutoff -3dB", type="primary"):
             res = find_bandpass_cutoff(R_bp, L_bp, C_bp, side="low" if "low" in side else "high")
             st.session_state["nr_result"] = res
-            st.success(f"✅ Frekuensi Cutoff {side} = **{res['f_cutoff']:.2f} Hz** (Pusat: {res['f_center']:.2f} Hz)")
+            st.success(f"Frekuensi Cutoff {side} = {res['f_cutoff']:.2f} Hz (Pusat: {res['f_center']:.2f} Hz)")
             col1, col2 = st.columns(2)
             col1.metric("f_cutoff (-3 dB)", f"{res['f_cutoff']:.2f} Hz")
             col2.metric("Iterasi NR", res["iterations"])
@@ -398,53 +398,53 @@ with tab_nr:
         C_val = c2.number_input("Kapasitansi C (µF)", 0.01, 100.0, 1.0) * 1e-6
         f_tgt = c3.number_input("Target Frekuensi (Hz, opsional)", 0.0, 1e6, 0.0)
 
-        if st.button("▶ Hitung Resonansi RLC", type="primary"):
+        if st.button("Hitung Resonansi RLC", type="primary"):
             result = find_rlc_resonance(L_val, C_val, target_freq=f_tgt if f_tgt > 0 else None)
-            st.success(f"✅ Frekuensi resonansi: **{result['resonance_freq_Hz']:.4f} Hz**")
+            st.success(f"Frekuensi resonansi: {result['resonance_freq_Hz']:.4f} Hz")
             col1, col2 = st.columns(2)
-            col1.metric("f_r (Hz)", f"{result['resonance_freq_Hz']:.4f}")
-            col2.metric("ω_r (rad/s)", f"{result['resonance_omega']:.4f}")
+            col1.metric("fr (Hz)", f"{result['resonance_freq_Hz']:.4f}")
+            col2.metric("omega_r (rad/s)", f"{result['resonance_omega']:.4f}")
             if f_tgt > 0 and "optimal_L_for_target_freq" in result:
-                st.metric("L Optimal untuk target f_r", f"{result['optimal_L_for_target_freq']*1e3:.4f} mH")
+                st.metric("L Optimal untuk target fr", f"{result['optimal_L_for_target_freq']*1e3:.4f} mH")
 
     # 5. RC Charging Time Constant
     elif nr_mode == "Konstanta Waktu RC Charging":
-        st.markdown("**Cari konstanta waktu τ dari titik pengukuran charging:**")
+        st.markdown("**Cari konstanta waktu tau dari titik pengukuran charging:**")
         c1, c2, c3 = st.columns(3)
         V_in_nr = c1.number_input("V_in (V)", 1.0, 50.0, 5.0)
         V_t_nr  = c2.number_input("V terukur pada waktu t (V)", 0.01, 49.9, 3.16)
         t_nr    = c3.number_input("Waktu t (ms)", 0.001, 1000.0, 1.0) * 1e-3
 
-        if st.button("▶ Cari Konstanta Waktu τ (Charging)", type="primary"):
+        if st.button("Cari Konstanta Waktu tau (Charging)", type="primary"):
             if V_t_nr >= V_in_nr:
                 st.error("V terukur harus < V_in!")
             else:
                 result = find_rc_time_constant(V_in_nr, V_t_nr, t_nr)
                 if result:
                     st.session_state["nr_result"] = result
-                    st.success(f"✅ τ = RC = **{result['root']*1000:.4f} ms**")
+                    st.success(f"tau = RC = {result['root']*1000:.4f} ms")
                     col1, col2, col3 = st.columns(3)
-                    col1.metric("τ (ms)", f"{result['root']*1000:.4f}")
-                    col2.metric("|f(τ)|", f"{abs(result['f_root']):.2e}")
+                    col1.metric("tau (ms)", f"{result['root']*1000:.4f}")
+                    col2.metric("|f(tau)|", f"{abs(result['f_root']):.2e}")
                     col3.metric("Iterasi", result["iterations"])
                     st.plotly_chart(plot_newton_raphson_convergence(result["history"]), use_container_width=True)
 
     # 6. RC Discharging Time Constant
     elif nr_mode == "Konstanta Waktu RC Discharging":
-        st.markdown("**Cari konstanta waktu τ dari titik pengosongan (discharging):**")
+        st.markdown("**Cari konstanta waktu tau dari titik pengosongan (discharging):**")
         c1, c2, c3 = st.columns(3)
         V0_nr   = c1.number_input("Tegangan Awal V0 (V)", 1.0, 50.0, 5.0)
         Vt_dis  = c2.number_input("V terukur saat discharging (V)", 0.01, 49.9, 1.84)
         t_dis   = c3.number_input("Waktu t (ms)", 0.001, 1000.0, 1.0) * 1e-3
 
-        if st.button("▶ Cari Konstanta Waktu τ (Discharging)", type="primary"):
+        if st.button("Cari Konstanta Waktu tau (Discharging)", type="primary"):
             result = find_rc_discharge_constant(V0_nr, Vt_dis, t_dis)
             if result:
                 st.session_state["nr_result"] = result
-                st.success(f"✅ τ = RC = **{result['root']*1000:.4f} ms**")
+                st.success(f"tau = RC = {result['root']*1000:.4f} ms")
                 col1, col2, col3 = st.columns(3)
-                col1.metric("τ (ms)", f"{result['root']*1000:.4f}")
-                col2.metric("|f(τ)|", f"{abs(result['f_root']):.2e}")
+                col1.metric("tau (ms)", f"{result['root']*1000:.4f}")
+                col2.metric("|f(tau)|", f"{abs(result['f_root']):.2e}")
                 col3.metric("Iterasi", result["iterations"])
                 st.plotly_chart(plot_newton_raphson_convergence(result["history"]), use_container_width=True)
 
@@ -454,16 +454,16 @@ with tab_nr:
         st.markdown("> Gunakan sintaks Python. Variabel: `x`. Contoh: `x**3 - 2*x - 5`")
         expr = st.text_input("f(x) =", value="x**3 - 2*x - 5")
         c1, c2 = st.columns(2)
-        x0_custom  = c1.number_input("Tebakan Awal x₀", -1e6, 1e6, 2.0)
+        x0_custom  = c1.number_input("Tebakan Awal x0", -1e6, 1e6, 2.0)
         eps_custom = c2.number_input("Epsilon FD", 1e-10, 1e-3, 1e-7, format="%.2e")
 
-        if st.button("▶ Selesaikan f(x) = 0", type="primary"):
+        if st.button("Selesaikan f(x) = 0", type="primary"):
             try:
                 f = lambda x: eval(expr, {"x": x, "np": np, "__builtins__": {}})
                 df_num = lambda x: (f(x + eps_custom) - f(x)) / eps_custom
                 result = newton_raphson_scalar(f, df_num, x0_custom)
                 st.session_state["nr_result"] = result
-                st.success(f"✅ Akar ditemukan: x = **{result['root']:.8f}**, f(x) = {result['f_root']:.4e}")
+                st.success(f"Akar ditemukan: x = {result['root']:.8f}, f(x) = {result['f_root']:.4e}")
                 st.plotly_chart(plot_newton_raphson_convergence(result["history"]), use_container_width=True)
             except Exception as e:
                 st.error(f"Error pada ekspresi: {e}")

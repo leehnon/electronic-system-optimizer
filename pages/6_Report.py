@@ -8,7 +8,7 @@ from modules.styles import inject_css
 from modules.evaluation import evaluate_metrics
 from modules.data_generator import ensure_default_data
 
-st.set_page_config(page_title="Report", page_icon="📄", layout="wide")
+st.set_page_config(page_title="Report", layout="wide")
 inject_css()
 ensure_default_data()
 
@@ -16,7 +16,7 @@ st.title("Report")
 st.markdown("Generate dan download laporan hasil optimasi parameter elektronika.")
 
 if "gd_result" not in st.session_state:
-    st.warning("⚠️ Jalankan komputasi numerik terlebih dahulu sebelum membuat laporan.")
+    st.warning("Jalankan komputasi numerik terlebih dahulu sebelum membuat laporan.")
     st.stop()
 
 result  = st.session_state["gd_result"]
@@ -96,7 +96,7 @@ else:
 metrics = evaluate_metrics(y_true, y_pred) if len(y_true) > 1 else {}
 
 # ── Preview Laporan ───────────────────────────────────────────────────────────
-st.markdown("## 📋 Preview Laporan Lengkap")
+st.markdown("## Preview Laporan Lengkap")
 
 report_text = f"""╔══════════════════════════════════════════════════════════════════════╗
 ║          LAPORAN OPTIMASI PARAMETER SISTEM ELEKTRONIKA              ║
@@ -170,14 +170,14 @@ report_text += f"""
 st.code(report_text, language=None)
 
 st.markdown("---")
-st.markdown("## ⬇️ Download Laporan & Data")
+st.markdown("## Download Laporan & Data")
 
 col1, col2, col3 = st.columns(3)
 
 # Download teks
 with col1:
     st.download_button(
-        "📄 Download Laporan (.txt)",
+        "Download Laporan (.txt)",
         data=report_text,
         file_name=f"laporan_optimizer_{circuit.lower().replace(' ','_').replace('(','').replace(')','')}.txt",
         mime="text/plain",
@@ -193,7 +193,7 @@ with col2:
             df_export["residual"] = np.array(y_true) - np.array(y_pred)
         csv_data = df_export.to_csv(index=False)
         st.download_button(
-            "📊 Download Data + Residual (.csv)",
+            "Download Data + Residual (.csv)",
             data=csv_data,
             file_name=f"data_hasil_{circuit.lower().replace(' ','_').replace('(','').replace(')','')}.csv",
             mime="text/csv",
@@ -210,7 +210,7 @@ with col3:
         })
         hist_csv = hist_df.to_csv(index=False)
         st.download_button(
-            "🔄 Download History Konvergensi (.csv)",
+            "Download History Konvergensi (.csv)",
             data=hist_csv,
             file_name="history_gradient_descent.csv",
             mime="text/csv",
@@ -218,7 +218,7 @@ with col3:
         )
 
 st.markdown("---")
-st.markdown("## 📊 Ringkasan Parameter Optimal")
+st.markdown("## Ringkasan Parameter Optimal")
 param_rows = []
 for i, name in enumerate(param_names):
     p_true = true_vals[i] if i < len(true_vals) else "N/A"
@@ -228,8 +228,8 @@ for i, name in enumerate(param_names):
         "Parameter":     name,
         "Nilai Optimal": f"{p_est:.6e}",
         "Nilai True":    f"{p_true:.6e}" if isinstance(p_true, (int, float)) else "N/A",
-        "Error (%)":     f"{err_pct:.4f}%" if isinstance(err_pct, (int, float)) else "N/A"
+        "Galat (%)":     f"{err_pct:.4f}%" if isinstance(err_pct, (int, float)) else "N/A"
     })
 st.dataframe(pd.DataFrame(param_rows), use_container_width=True)
 
-st.success("✅ Laporan lengkap siap diunduh.")
+st.success("Laporan lengkap siap diunduh.")

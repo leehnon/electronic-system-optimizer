@@ -1,6 +1,6 @@
 """
 modules/styles.py — Design system ElectronicSystem Optimizer
-Clean, modern, high-contrast UI for Streamlit
+Clean, modern, high-contrast, professional UI for Streamlit (No emoji)
 """
 import streamlit as st
 
@@ -39,7 +39,7 @@ html, body, [data-testid="stApp"] {
 
 /* Brand header at top of sidebar */
 [data-testid="stSidebar"] > div:first-child::before {
-    content: "⚡ Electronic Optimizer";
+    content: "ESPOptimizer";
     display: block;
     font-size: 0.95rem;
     font-weight: 700;
@@ -116,7 +116,7 @@ html, body, [data-testid="stApp"] {
     font-weight: 700 !important;
 }
 
-/* Replace "app" label with "🏠 Beranda" */
+/* Replace "app" label with "Beranda" */
 [data-testid="stSidebarNav"] ul > li:first-child a p,
 [data-testid="stSidebarNav"] ul > li:first-child a span {
     font-size: 0 !important;
@@ -126,7 +126,7 @@ html, body, [data-testid="stApp"] {
 }
 [data-testid="stSidebarNav"] ul > li:first-child a p::before,
 [data-testid="stSidebarNav"] ul > li:first-child a span::before {
-    content: "🏠 Beranda";
+    content: "Beranda";
     font-size: 0.88rem !important;
     color: #1e293b !important;
     position: absolute;
